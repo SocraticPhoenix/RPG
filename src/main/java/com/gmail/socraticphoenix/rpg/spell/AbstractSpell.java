@@ -1,9 +1,12 @@
 package com.gmail.socraticphoenix.rpg.spell;
 
+import com.gmail.socraticphoenix.rpg.modifiers.SetModifier;
 import com.gmail.socraticphoenix.rpg.registry.AbstractRegistryItem;
 import com.gmail.socraticphoenix.rpg.registry.RPGRegistryItem;
+import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.item.ItemType;
 
+import java.util.Collections;
 import java.util.List;
 
 public abstract class AbstractSpell extends AbstractRegistryItem<RPGRegistryItem> implements Spell {
@@ -38,6 +41,21 @@ public abstract class AbstractSpell extends AbstractRegistryItem<RPGRegistryItem
     @Override
     public Cost cost() {
         return this.cost;
+    }
+
+    @Override
+    public void activate(Living caster, List<SetModifier> modifiers) {
+
+    }
+
+    @Override
+    public List<SetModifier> passiveModifiers() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void deactivate(Living caster) {
+
     }
 
 }

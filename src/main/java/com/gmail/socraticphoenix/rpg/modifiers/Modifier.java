@@ -15,9 +15,10 @@ public class Modifier<T> extends AbstractRegistryItem<RPGRegistryItem> implement
     private Map<String, Object> defaultArguments;
     private ModifierFunction<T> function;
     private ModifierCondition condition;
+    private Class<T> type;
     private int priority;
 
-    public Modifier(ModifierFunction function, ModifierCondition condition, BiFunction<Player, Map<String, Object>, String> desc, BiFunction<String, DataView, Object> argumentLoader, Map<String, Object> defaultArguments, int priority, String pluginId, String id) {
+    public Modifier(ModifierFunction<T> function, ModifierCondition condition, BiFunction<Player, Map<String, Object>, String> desc, BiFunction<String, DataView, Object> argumentLoader, Map<String, Object> defaultArguments, Class<T> type, int priority, String pluginId, String id) {
         super(pluginId, id);
         this.function = function;
         this.condition = condition;
@@ -25,6 +26,11 @@ public class Modifier<T> extends AbstractRegistryItem<RPGRegistryItem> implement
         this.desc = desc;
         this.argumentLoader = argumentLoader;
         this.priority = priority;
+        this.type = type;
+    }
+
+    public Class<T> getType() {
+        return type;
     }
 
     public int getPriority() {

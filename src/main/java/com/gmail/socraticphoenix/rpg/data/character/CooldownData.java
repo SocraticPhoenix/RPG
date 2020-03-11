@@ -19,14 +19,17 @@ import java.util.concurrent.TimeUnit;
 
 public class CooldownData extends RPGData<CooldownData> {
     private Map<Spell, Long> cds;
+    private Map<Spell, Integer> charges;
+    private Map<Spell, Integer> maxCharges;
 
-    public CooldownData(Map<Spell, Long> cds) {
+    public CooldownData(Map<Spell, Long> cds, Map<Spell, Integer> charges) {
         super(0);
         this.cds = cds;
+        this.charges = charges;
     }
 
     public CooldownData() {
-        this(new HashMap<>());
+        this(new HashMap<>(), new HashMap<>());
     }
 
     public Map<Spell, Long> getCds() {
@@ -102,6 +105,60 @@ public class CooldownData extends RPGData<CooldownData> {
         }
     }
 
+    public boolean hasCharges(Spell spell, int mxCharges) {
+        Integer charges = this.charges.get(spell);
+        if (charges != null) {
+            int mx = this.maxCharges.get(spell);
+            int nCharges = charges;
+            if (mx < mxCharges) {
+                nCharges = nCharges + (mxCharges - mx);
+            } else if (mx > mxCharges) {
+                nCharges = Math.min(0, nCharges - (mx - mxCharges));
+            }
+
+            return nCharges > 0;
+        } else {
+            return true;
+        }
+    }
+
+    public int getCharges(Spell spell) {
+        Integer charges = this.charges.get(spell);
+        if (charges != null) {
+            return charges;
+        }
+
+        return spell.cost().getCharges();
+    }
+
+    public int maxCharges(Spell spell) {
+        Integer charges = this.maxCharges.get(spell);
+        if (charges != null) {
+            return charges;
+        }
+        return spell.cost().getCharges();
+    }
+
+    public void reduceCharges(Spell spell, int mxCharges) {
+        Integer charges = this.charges.get(spell);
+        if (charges == null) {
+            if (mxCharges > 0) {
+                this.maxCharges.put(spell, mxCharges);
+                this.charges.put(spell, mxCharges - 1);
+            }
+        } else {
+            int mx = this.maxCharges.get(spell);
+            int nCharges = charges - 1;
+            if (mx < mxCharges) {
+                nCharges = nCharges + (mxCharges - mx);
+            } else if (mx > mxCharges) {
+                nCharges = Math.min(0, nCharges - (mx - mxCharges));
+            }
+            this.charges.put(spell, nCharges);
+            this.maxCharges.put(spell, mxCharges);
+        }
+    }
+
     public void cleanUp() {
         long current = System.currentTimeMillis();
         cds.entrySet().removeIf(e -> e.getValue() <= current);
@@ -111,31 +168,54 @@ public class CooldownData extends RPGData<CooldownData> {
     public CooldownData copy() {
         Map<Spell, Long> cds = new HashMap<>();
         cds.putAll(this.cds);
-        return new CooldownData(cds);
+
+        Map<Spell, Integer> charges = new HashMap<>();
+        charges.putAll(this.charges);
+        return new CooldownData(cds, charges);
     }
 
     @Override
     public DataContainer fill(DataContainer container) {
         cleanUp();
-        List<DataView> entries = new ArrayList<>();
+        List<DataView> cooldowns = new ArrayList<>();
+        List<DataView> charges = new ArrayList<>();
         this.cds.forEach((s, cd) -> {
             DataContainer entry = DataContainer.createNew();
             entry.set(SPELL, s);
             entry.set(COOLDOWN, cd);
+            cooldowns.add(entry);
+        });
+        this.charges.forEach((s, ch) -> {
+            DataContainer entry = DataContainer.createNew();
+            entry.set(SPELL, s);
+            entry.set(CHARGE, ch);
+            entry.set(MAX_CHARGES, this.maxCharges.get(s));
+            charges.add(entry);
         });
 
-        return container.set(COOLDOWNS, entries);
+        return container
+                .set(CHARGES, charges)
+                .set(COOLDOWNS, cooldowns);
     }
 
     @Override
     public Optional<CooldownData> from(DataView container) {
-        if (!container.contains(COOLDOWNS)) {
+        if (!container.contains(COOLDOWNS, CHARGES)) {
             return Optional.empty();
         }
 
         Map<Spell, Long> cds = new HashMap<>();
         container.getViewList(COOLDOWNS).get().forEach(v -> cds.put(v.getSerializable(SPELL, Spell.class).get(), v.getLong(COOLDOWN).get()));
         this.cds = cds;
+
+        Map<Spell, Integer> charges = new HashMap<>();
+        Map<Spell, Integer> maxCharges = new HashMap<>();
+        container.getViewList(CHARGES).get().forEach(v -> {
+            Spell spell = v.getSerializable(SPELL, Spell.class).get();
+            charges.put(spell, v.getInt(CHARGE).get());
+            maxCharges.put(spell, v.getInt(MAX_CHARGES).get());
+        });
+        this.charges = charges;
 
         return Optional.of(this);
     }

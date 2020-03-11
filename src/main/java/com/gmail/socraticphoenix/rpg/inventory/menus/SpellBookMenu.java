@@ -1,11 +1,11 @@
-package com.gmail.socraticphoenix.rpg.inventory.player.menus;
+package com.gmail.socraticphoenix.rpg.inventory.menus;
 
 import com.gmail.socraticphoenix.collect.Items;
 import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.data.character.InventoryData;
 import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
-import com.gmail.socraticphoenix.rpg.inventory.player.ImplementableSelectableMenu;
+import com.gmail.socraticphoenix.rpg.inventory.SelectableMenu;
 import com.gmail.socraticphoenix.rpg.spell.Spell;
 import com.gmail.socraticphoenix.rpg.spell.Spells;
 import com.gmail.socraticphoenix.rpg.translation.Messages;
@@ -20,7 +20,7 @@ import org.spongepowered.api.text.format.TextColors;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpellBookMenu extends ImplementableSelectableMenu {
+public class SpellBookMenu extends SelectableMenu {
     public static final int MAX_SPACE = 27;
 
     public SpellBookMenu() {

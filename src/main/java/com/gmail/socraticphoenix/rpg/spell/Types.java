@@ -7,8 +7,11 @@ public interface Types {
     Type SPELL = type("spell");
     Type EXCLUSIVE = type("exclusive", SPELL);
     Type INHERITABLE = type("inheritable", SPELL);
-    Type NOVICE = type("novice", SPELL);
-    Type MELEE = type("melee", SPELL);
+
+    Type PHYSICAL = type("physical", SPELL);
+        Type PHYSICAL_MELEE = type("physical_melee", PHYSICAL);
+        Type PHYSICAL_RANGED = type("physical_ranged", PHYSICAL);
+
     Type PASSIVE = type("passive", SPELL);
     Type TRIGGERED = type("triggered", SPELL);
     Type CROWD_CONTROl = type("crowd_control", SPELL);
@@ -43,9 +46,9 @@ public interface Types {
     }
 
     static void register(RPGRegisterEvent ev) {
-        ev.register(Type.class, SPELL, EXCLUSIVE, INHERITABLE, NOVICE, PASSIVE, TRIGGERED, CROWD_CONTROl, POSITIVE,
+        ev.register(Type.class, SPELL, EXCLUSIVE, INHERITABLE, PASSIVE, TRIGGERED, CROWD_CONTROl, POSITIVE,
                 TEMPORAL, HEAL, ELEMENTAL, FIRE, WATER, EARTH, AIR, ICE, LAVA, STEAM, MUD, SAND, LIGHTNING,
-                NEGATIVE, SUMMONING, MIND, DREAM, BEE);
+                NEGATIVE, SUMMONING, MIND, DREAM, BEE, PHYSICAL, PHYSICAL_MELEE, PHYSICAL_RANGED);
     }
 
 }

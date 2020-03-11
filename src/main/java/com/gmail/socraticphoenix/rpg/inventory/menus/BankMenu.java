@@ -1,10 +1,10 @@
-package com.gmail.socraticphoenix.rpg.inventory.player.menus;
+package com.gmail.socraticphoenix.rpg.inventory.menus;
 
 import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.data.character.InventoryData;
 import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
-import com.gmail.socraticphoenix.rpg.inventory.player.SelectableMenu;
+import com.gmail.socraticphoenix.rpg.inventory.SimpleSelectableMenu;
 import com.gmail.socraticphoenix.rpg.inventory.storage.ItemStorage;
 import com.gmail.socraticphoenix.rpg.translation.Messages;
 import org.spongepowered.api.data.key.Keys;
@@ -15,7 +15,7 @@ import org.spongepowered.api.item.inventory.type.GridInventory;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
-public class BankMenu extends SelectableMenu {
+public class BankMenu extends SimpleSelectableMenu {
 
     public BankMenu() {
         super(player -> RPGData.inventory(player).map(InventoryData::getMaxPage).orElse(1),
@@ -38,4 +38,5 @@ public class BankMenu extends SelectableMenu {
         InventoryHelper.cleanPages(player, page);
         super.setPage(player, data, inventory, page);
     }
+
 }

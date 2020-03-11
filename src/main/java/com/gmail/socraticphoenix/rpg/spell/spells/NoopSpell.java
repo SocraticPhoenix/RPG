@@ -19,19 +19,4 @@ public class NoopSpell extends AbstractSpell {
         super(Items.buildList(Types.TRIGGERED), Cost.free(), "rpg.spells.noop", ItemTypes.COAL_BLOCK, RPGPlugin.ID);
     }
 
-    @Override
-    public void activate(Living caster, List<SetModifier> modifiers) {
-
-    }
-
-    @Override
-    public List<SetModifier> passiveModifiers() {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public void deactivate(Living caster) {
-
-    }
-
 }

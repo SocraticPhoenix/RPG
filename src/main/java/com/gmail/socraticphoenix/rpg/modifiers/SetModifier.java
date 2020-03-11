@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class SetModifier<T> implements DataSerializable, Comparable<SetModifier<T>> {
+public class SetModifier<T> implements DataSerializable, Comparable<SetModifier> {
     private Modifier<T> modifier;
     private Map<String, Object> arguments;
 
@@ -59,7 +59,7 @@ public class SetModifier<T> implements DataSerializable, Comparable<SetModifier<
     }
 
     @Override
-    public int compareTo(SetModifier<T> o) {
+    public int compareTo(SetModifier o) {
         return this.modifier.compareTo(o.modifier);
     }
     

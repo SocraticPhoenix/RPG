@@ -7,16 +7,25 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.item.inventory.TargetInventoryEvent;
 
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 
 public class ButtonAction extends AbstractRegistryItem<RPGRegistryItem> implements DataSerializable, RPGRegistryItem {
-    private BiConsumer<Player, TargetInventoryEvent> handler;
+    private BiPredicate<Player, TargetInventoryEvent> handler;
 
-    public ButtonAction(BiConsumer<Player, TargetInventoryEvent> handler, String pluginId, String id) {
+    public ButtonAction(BiPredicate<Player, TargetInventoryEvent> handler, String pluginId, String id) {
         super(pluginId, id);
         this.handler = handler;
     }
 
-    public BiConsumer<Player, TargetInventoryEvent> getHandler() {
+    public ButtonAction(BiConsumer<Player, TargetInventoryEvent> handler, String pluginId, String id) {
+        super(pluginId, id);
+        this.handler = (player, targetInventoryEvent) -> {
+            handler.accept(player, targetInventoryEvent);
+            return true;
+        };
+    }
+
+    public BiPredicate<Player, TargetInventoryEvent> getHandler() {
         return handler;
     }
 

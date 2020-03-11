@@ -1,0 +1,2 @@
+rpg.lang.tag=en-us
+rpg.lang.name=English (US)

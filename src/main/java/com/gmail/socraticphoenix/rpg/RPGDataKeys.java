@@ -6,6 +6,7 @@ import com.gmail.socraticphoenix.rpg.data.item.ItemData;
 import com.gmail.socraticphoenix.rpg.data.mob.MobData;
 import com.gmail.socraticphoenix.rpg.data.item.WandData;
 import com.gmail.socraticphoenix.rpg.data.mob.NPCData;
+import com.gmail.socraticphoenix.rpg.data.mob.ProjectileData;
 import com.gmail.socraticphoenix.rpg.inventory.button.ButtonAction;
 import com.google.common.reflect.TypeToken;
 import org.spongepowered.api.data.DataQuery;
@@ -29,6 +30,7 @@ public class RPGDataKeys {
     public static Key<Value<ItemData>> ITEM_DATA = DummyObjectProvider.createExtendedFor(Key.class, "ITEM_DATA");
     public static Key<Value<MobData>> MOB_DATA = DummyObjectProvider.createExtendedFor(Key.class, "MOB_DATA");
     public static Key<Value<NPCData>> NPC_DATA = DummyObjectProvider.createExtendedFor(Key.class, "NPC_DATA");
+    public static Key<Value<ProjectileData>> PROJECTILE_DATA = DummyObjectProvider.createExtendedFor(Key.class, "PROJECTILE_DATA");
 
     @Listener
     public void onRegistration(GameRegistryEvent.Register<Key<?>> event) {
@@ -95,6 +97,13 @@ public class RPGDataKeys {
                 .query(DataQuery.of("NPCData"))
                 .build();
         event.register(NPC_DATA);
+        PROJECTILE_DATA = Key.builder()
+                .type(new TypeToken<Value<ProjectileData>>() {})
+                .id("projectile_data")
+                .name("Projectile Data")
+                .query(DataQuery.of("ProjectileData"))
+                .build();
+        event.register(PROJECTILE_DATA);
     }
 
 }

@@ -9,6 +9,6 @@ import java.util.Map;
 
 public interface ModifierFunction<T> {
 
-    T modify(Living target, T current, T lastPrio, Map<T, Integer> iterations, Map<String, Object> arguments, Map<String, Object> context);
+    T modify(T current, T lastPrio, Map<T, Integer> iterations, Map<String, Object> arguments, Map<String, Object> context);
 
 }

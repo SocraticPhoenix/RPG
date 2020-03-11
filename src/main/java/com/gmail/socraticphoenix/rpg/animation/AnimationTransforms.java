@@ -17,6 +17,10 @@ public interface AnimationTransforms {
         };
     }
 
+    static Function<Vector3d, Vector3d> newOrigin(Vector3d origin) {
+        return v -> v.sub(origin);
+    }
+
     static Function<Vector3d, Vector3d> newAxes(Vector3d xAxis, Vector3d yAxis, Vector3d zAxis) {
         xAxis = xAxis.normalize();
         yAxis = yAxis.normalize();

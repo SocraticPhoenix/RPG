@@ -9,7 +9,7 @@ import com.gmail.socraticphoenix.rpg.data.character.RuntimeData;
 import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
 import com.gmail.socraticphoenix.rpg.inventory.button.RuntimeButtonAction;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.ButtonData;
-import com.gmail.socraticphoenix.rpg.inventory.player.menus.OptionMenu;
+import com.gmail.socraticphoenix.rpg.inventory.menus.OptionMenu;
 import com.gmail.socraticphoenix.rpg.options.values.Option;
 import com.gmail.socraticphoenix.rpg.options.values.SetOption;
 import com.gmail.socraticphoenix.rpg.options.values.set.BasicSetOption;
@@ -83,11 +83,13 @@ public class ScoreboardOption extends AbstractRegistryItem<RPGRegistryItem> impl
                 .itemType(ItemTypes.WOOL)
                 .add(Keys.DYE_COLOR, DyeColors.BLUE)
                 .add(Keys.DISPLAY_NAME, Text.of(TextColors.BLUE, Messages.translate(player, "rpg.menu.finish")))
-                .itemData(ButtonData.of(new RuntimeButtonAction((player1, inventoryEvent) -> RPGData.runtime(player1).ifPresent(r -> {
-                    if (r.getMenu() instanceof OptionMenu) {
-                        ((OptionMenu) r.getMenu()).finishModifying(player1);
-                    }
-                }))))
+                .itemData(ButtonData.of(new RuntimeButtonAction((player1, inventoryEvent) -> {
+                    RPGData.runtime(player1).ifPresent(r -> {
+                        if (r.getMenu() instanceof OptionMenu) {
+                            ((OptionMenu) r.getMenu()).finishModifying(player1);
+                        }
+                    });
+                })))
                 .build();
 
         inventory.set(button1.getX(), button1.getY(), finishButton);

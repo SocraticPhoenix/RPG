@@ -12,7 +12,7 @@ public class ImmutableCustomNPCDataImpl extends RPGImmutableCustomDataImpl<NPCDa
 
     @Override
     public CustomNPCData asMutable() {
-        return new CustomNPCDataImpl(this.value);
+        return new CustomNPCDataImpl(this.value.copy());
     }
 
     @Override

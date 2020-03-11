@@ -12,7 +12,6 @@ import com.gmail.socraticphoenix.rpg.click.data.impl.ItemClickDataImpl;
 import com.gmail.socraticphoenix.rpg.click.data.impl.ItemClickDataManipulatorBuilder;
 import com.gmail.socraticphoenix.rpg.click.data.impl.PlayerClickDataImpl;
 import com.gmail.socraticphoenix.rpg.click.data.impl.PlayerClickDataManipulatorBuilder;
-import com.gmail.socraticphoenix.rpg.crafting.RPGCraftingRecipe;
 import com.gmail.socraticphoenix.rpg.data.PlayerData;
 import com.gmail.socraticphoenix.rpg.data.character.CharacterData;
 import com.gmail.socraticphoenix.rpg.data.character.CooldownData;
@@ -25,6 +24,7 @@ import com.gmail.socraticphoenix.rpg.data.item.ItemData;
 import com.gmail.socraticphoenix.rpg.data.mob.MobData;
 import com.gmail.socraticphoenix.rpg.data.item.WandData;
 import com.gmail.socraticphoenix.rpg.data.mob.NPCData;
+import com.gmail.socraticphoenix.rpg.data.mob.ProjectileData;
 import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemData;
 import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemDataBuilder;
 import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemDataImpl;
@@ -35,16 +35,7 @@ import com.gmail.socraticphoenix.rpg.data.sponge.item.ImmutableCustomItemData;
 import com.gmail.socraticphoenix.rpg.data.sponge.item.ImmutableCustomItemDataImpl;
 import com.gmail.socraticphoenix.rpg.data.sponge.item.ImmutableCustomWandData;
 import com.gmail.socraticphoenix.rpg.data.sponge.item.ImmutableCustomWandDataImpl;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.CustomMobData;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.CustomMobDataBuilder;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.CustomMobDataImpl;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.CustomNPCData;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.CustomNPCDataBuilder;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.CustomNPCDataImpl;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.ImmutableCustomMobData;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.ImmutableCustomMobDataImpl;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.ImmutableCustomNPCData;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.ImmutableCustomNPCDataImpl;
+import com.gmail.socraticphoenix.rpg.data.sponge.mob.*;
 import com.gmail.socraticphoenix.rpg.gods.God;
 import com.gmail.socraticphoenix.rpg.inventory.button.ButtonAction;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.ButtonData;
@@ -52,7 +43,7 @@ import com.gmail.socraticphoenix.rpg.inventory.button.data.ImmutableButtonData;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.impl.ButtonDataImpl;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.impl.ButtonDataManipulatorBuilder;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.impl.ImmutableButtonDataImpl;
-import com.gmail.socraticphoenix.rpg.inventory.player.SelectableMenu;
+import com.gmail.socraticphoenix.rpg.inventory.SimpleSelectableMenu;
 import com.gmail.socraticphoenix.rpg.inventory.storage.ItemStorage;
 import com.gmail.socraticphoenix.rpg.inventory.storage.ItemStorageBuilder;
 import com.gmail.socraticphoenix.rpg.modifiers.Modifier;
@@ -91,8 +82,7 @@ public class RPGDataRegistrations {
         manager.registerBuilder(RPGRegistry.class, new RPGRegistryItemBuilder<>(RPGRegistry.class));
         manager.registerBuilder(ButtonAction.class, new RPGRegistryItemBuilder<>(ButtonAction.class));
         manager.registerBuilder(ItemClickPredicate.class, new RPGRegistryItemBuilder<>(ItemClickPredicate.class));
-        manager.registerBuilder(SelectableMenu.class, new RPGRegistryItemBuilder<>(SelectableMenu.class));
-        manager.registerBuilder(RPGCraftingRecipe.class, new RPGRegistryItemBuilder<>(RPGCraftingRecipe.class));
+        manager.registerBuilder(SimpleSelectableMenu.class, new RPGRegistryItemBuilder<>(SimpleSelectableMenu.class));
         manager.registerBuilder(ScoreboardStat.class, new RPGRegistryItemBuilder<>(ScoreboardStat.class));
         manager.registerBuilder(Option.class, new RPGRegistryItemBuilder<>(Option.class));
         manager.registerBuilder(Spell.class, new RPGRegistryItemBuilder<>(Spell.class));
@@ -120,6 +110,7 @@ public class RPGDataRegistrations {
         manager.registerBuilder(QuestData.class, new QuestData.Builder());
         manager.registerBuilder(NPCData.class, new NPCData.Builder());
         manager.registerBuilder(AugmentSlot.class, new AugmentSlot.Builder());
+        manager.registerBuilder(ProjectileData.class, new ProjectileData.Builder());
 
         DataRegistration.builder()
                 .dataClass(PlayerClickData.class)
@@ -189,6 +180,16 @@ public class RPGDataRegistrations {
                 .builder(new CustomNPCDataBuilder())
                 .dataName("NPC Data")
                 .manipulatorId(RPGPlugin.ID + ":npc_data")
+                .buildAndRegister(this.container);
+
+        DataRegistration.builder()
+                .dataClass(CustomProjectileData.class)
+                .dataImplementation(CustomProjectileDataImpl.class)
+                .immutableClass(ImmutableCustomProjectileData.class)
+                .immutableImplementation(ImmutableCustomProjectileDataImpl.class)
+                .builder(new CustomProjectileDataBuilder())
+                .dataName("Projectile Data")
+                .manipulatorId(RPGPlugin.ID + ":projectile_data")
                 .buildAndRegister(this.container);
     }
 

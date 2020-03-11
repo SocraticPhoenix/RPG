@@ -8,13 +8,18 @@ import com.gmail.socraticphoenix.rpg.data.character.OptionData;
 import com.gmail.socraticphoenix.rpg.data.character.RuntimeData;
 import com.gmail.socraticphoenix.rpg.data.character.SpellBookData;
 import com.gmail.socraticphoenix.rpg.data.character.StatData;
+import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemData;
+import com.gmail.socraticphoenix.rpg.spell.Spell;
+import com.gmail.socraticphoenix.rpg.stats.StatHelper;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.DataSerializable;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.Queries;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.item.inventory.ItemStack;
 
+import javax.xml.crypto.Data;
 import java.util.Optional;
 
 public abstract class RPGData<T extends RPGData<T>> implements DataSerializable {
@@ -32,7 +37,7 @@ public abstract class RPGData<T extends RPGData<T>> implements DataSerializable 
 
     public static final DataQuery SPELL = DataQuery.of("Spell");
     public static final DataQuery SEQUENCE = DataQuery.of("Sequence");
-    public static final DataQuery LOCKED = DataQuery.of("Locked");
+    public static final DataQuery ALLOWED = DataQuery.of("Allowed");
     public static final DataQuery BYPASS = DataQuery.of("Bypass");
 
     public static final DataQuery CHARACTERS = DataQuery.of("Characters");
@@ -49,11 +54,13 @@ public abstract class RPGData<T extends RPGData<T>> implements DataSerializable 
     public static final DataQuery INVENTORY_LEGGINGS = DataQuery.of("InventoryLeggings");
     public static final DataQuery INVENTORY_BOOTS = DataQuery.of("InventoryBoots");
     public static final DataQuery INVENTORY_WAND = DataQuery.of("InventoryWand");
+    public static final DataQuery INVENTORY_AUGMENTING = DataQuery.of("InventoryAugmenting");
     public static final DataQuery INVENTORY_CRAFTING = DataQuery.of("InventoryCrafting");
     public static final DataQuery INVENTORY_SELECTED_SLOT = DataQuery.of("InventorySelectedSlot");
     public static final DataQuery INVENTORY_MAX_PAGE = DataQuery.of("InventoryMaxPage");
 
     public static final DataQuery STATS_XP = DataQuery.of("StatsXp");
+    public static final DataQuery STATS_LEVEL = DataQuery.of("StatsLevel");
     public static final DataQuery STATS_HEALTH = DataQuery.of("StatsHealth");
     public static final DataQuery STATS_MANA = DataQuery.of("StatsMana");
     public static final DataQuery STATS_MAX_HEALTH = DataQuery.of("StatsMaxHealth");
@@ -73,6 +80,9 @@ public abstract class RPGData<T extends RPGData<T>> implements DataSerializable 
 
     public static final DataQuery COOLDOWNS = DataQuery.of("Cooldowns");
     public static final DataQuery COOLDOWN = DataQuery.of("Cooldown");
+    public static final DataQuery CHARGES = DataQuery.of("Charges");
+    public static final DataQuery CHARGE = DataQuery.of("Charge");
+    public static final DataQuery MAX_CHARGES = DataQuery.of("MaxCharges");
 
     public static final DataQuery MODIFIER = DataQuery.of("Modifier");
     public static final DataQuery ARGUMENTS = DataQuery.of("Arguments");
@@ -81,15 +91,23 @@ public abstract class RPGData<T extends RPGData<T>> implements DataSerializable 
     public static final DataQuery AUGMENTS = DataQuery.of("Augments");
     public static final DataQuery AUGMENT_SLOTS = DataQuery.of("AugmentSlots");
     public static final DataQuery AUGMENT_COLOR = DataQuery.of("AugmentColor");
+    public static final DataQuery AUGMENT_GEM = DataQuery.of("AugmentGem");
     public static final DataQuery OMNIWAND = DataQuery.of("Omniwand");
     public static final DataQuery SPELL_SLOTS = DataQuery.of("SpellSlots");
+    public static final DataQuery MIN_LEVEL = DataQuery.of("MinLevel");
 
     public static final DataQuery QUESTS = DataQuery.of("Quests");
     public static final DataQuery KEY = DataQuery.of("Key");
     public static final DataQuery VALUE = DataQuery.of("Value");
 
-    public static DataQuery COMPLETED = DataQuery.of("Completed");
+    public static final DataQuery COMPLETED = DataQuery.of("Completed");
     public static final DataQuery CONVERSATION = DataQuery.of("Conversation");
+
+    public static final DataQuery VELOCITY = DataQuery.of("Velocity");
+    public static final DataQuery GRAVITY = DataQuery.of("Gravity");
+    public static final DataQuery POLICY = DataQuery.of("Policy");
+    public static final DataQuery ORIGIN = DataQuery.of("Origin");
+    public static final DataQuery RANGE = DataQuery.of("Range");
 
     public static Optional<CharacterData> active(Player player) {
         return RPGPlugin.getPlugin().getDataStorage().get(player).flatMap(RPGPlayerData::activeCharacter);
@@ -117,6 +135,14 @@ public abstract class RPGData<T extends RPGData<T>> implements DataSerializable 
 
     public static Optional<RuntimeData> runtime(Player player) {
         return active(player).map(CharacterData::getRuntime);
+    }
+
+    public static boolean canUse(ItemStack stack, Player player) {
+        if (stack.get(CustomItemData.class).isPresent()) {
+            return StatHelper.getLevel(player) >= stack.get(CustomItemData.class).get().value().get().getMinLevel();
+        }
+
+        return true;
     }
 
     private int contentVersion;

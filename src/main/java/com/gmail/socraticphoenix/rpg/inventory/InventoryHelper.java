@@ -4,12 +4,13 @@ import com.flowpowered.math.vector.Vector2i;
 import com.gmail.socraticphoenix.collect.Items;
 import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
+import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemData;
 import com.gmail.socraticphoenix.rpg.inventory.button.ButtonAction;
 import com.gmail.socraticphoenix.rpg.inventory.button.RuntimeButtonAction;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.ButtonData;
-import com.gmail.socraticphoenix.rpg.inventory.player.SelectableMenu;
 import com.gmail.socraticphoenix.rpg.inventory.storage.ItemStorage;
 import com.gmail.socraticphoenix.rpg.registry.registries.ButtonActionRegistry;
+import com.gmail.socraticphoenix.rpg.stats.StatHelper;
 import com.gmail.socraticphoenix.rpg.translation.Messages;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
@@ -184,6 +185,22 @@ public interface InventoryHelper {
         });
     }
 
+    static ItemStack uselessCopy(ItemStack stack) {
+        ItemStack.Builder builder = ItemStack.builder();
+        builder.itemType(stack.getType())
+            .quantity(stack.getQuantity());
+
+        if (stack.get(Keys.DISPLAY_NAME).isPresent()) {
+            builder.add(Keys.DISPLAY_NAME, Text.of(TextColors.RED, stack.get(Keys.DISPLAY_NAME)));
+        }
+
+        if (stack.get(Keys.ITEM_DURABILITY).isPresent()) {
+            builder.add(Keys.ITEM_DURABILITY, stack.get(Keys.ITEM_DURABILITY).get());
+        }
+
+        return builder.build();
+    }
+
     static void syncHotbarDataAndHotbar(Player player) {
         RPGData.inventory(player).ifPresent(hotbarData -> {
             Hotbar hotbar = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(Hotbar.class));
@@ -194,7 +211,8 @@ public interface InventoryHelper {
             for (int i = newSlot - 3, j = 2; i <= newSlot + 3; i++, j++) {
                 SlotIndex targetIndex = SlotIndex.of(j);
                 if (i >= 0 && i < stacks.size() && stacks.get(i).isPresent()) {
-                    hotbar.set(targetIndex, stacks.get(i).get());
+                    ItemStack stack = stacks.get(i).get();
+                    hotbar.set(targetIndex, stack);
                 } else {
                     hotbar.getSlot(targetIndex).get().clear();
                 }
@@ -308,7 +326,7 @@ public interface InventoryHelper {
 
             while (iterator.hasNext() && index < 9) {
                 SelectableMenu menu = iterator.next();
-                ItemStack button = menu.button().apply(player);
+                ItemStack button = menu.button(player);
                 button.offer(ButtonData.of(menu.action()));
                 buttons.add(button);
                 index++;

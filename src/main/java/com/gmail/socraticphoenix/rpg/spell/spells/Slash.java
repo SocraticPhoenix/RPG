@@ -23,36 +23,29 @@ import org.spongepowered.api.item.ItemTypes;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 public class Slash extends AbstractSpell {
     private static AnimationPixel pixel = new AnimationParticlePixel(ParticleEffect.builder().type(ParticleTypes.SWEEP_ATTACK).build());
 
-    public Slash() {
-        super(Items.buildList(Types.TRIGGERED, Types.MELEE), Cost.seconds(.5, 1), "rpg.spells.slash", ItemTypes.STONE_SWORD, RPGPlugin.ID);
+    private Function<Living, Integer> damage;
+
+    public Slash(Function<Living, Integer> damage, String id) {
+        super(Items.buildList(Types.TRIGGERED, Types.PHYSICAL_MELEE), Cost.of(.5), id, ItemTypes.STONE_SWORD, RPGPlugin.ID);
+        this.damage = damage;
     }
 
     @Override
     public void activate(Living caster, List<SetModifier> modifiers) {
         Vector3d start = Spells.getIntersection(caster, Spells.friends(caster), 2);
 
-        Spells.getIntersecting(caster, Spells.area(start, 1), Spells.friends(caster)).forEach(e -> {
-            Spells.damage(caster, e, this, Dice.roll(2, StatHelper.getLevel(caster), 6));
-            Spells.flatKnockback(e, start, .5);
+        Spells.getIntersectingRectangle(caster, caster.getLocation().getPosition(), Spells.area(start, 1), Spells.enemies( caster)).forEach(e -> {
+            Spells.damage(caster, e, modifiers, this.damage.apply(caster), this);
+            Spells.flatKnockback(caster, e, modifiers, .5, start, this);
         });
-
 
         caster.getWorld().playSound(SoundTypes.ENTITY_PLAYER_ATTACK_SWEEP, start, 0.5);
         Animation.draw(caster.getWorld(), start, pixel);
-    }
-
-    @Override
-    public List<SetModifier> passiveModifiers() {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public void deactivate(Living caster) {
-
     }
 
 }

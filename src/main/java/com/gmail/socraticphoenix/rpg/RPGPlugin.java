@@ -8,8 +8,6 @@ import com.gmail.socraticphoenix.rpg.click.ClickListener;
 import com.gmail.socraticphoenix.rpg.click.ClickType;
 import com.gmail.socraticphoenix.rpg.click.data.ItemClickData;
 import com.gmail.socraticphoenix.rpg.conversation.Conversations;
-import com.gmail.socraticphoenix.rpg.crafting.AugmentCraftingRecipe;
-import com.gmail.socraticphoenix.rpg.crafting.RPGCraftingRecipe;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.data.RPGDataStorage;
 import com.gmail.socraticphoenix.rpg.data.RPGJsonDataStorage;
@@ -34,26 +32,17 @@ import com.gmail.socraticphoenix.rpg.modifiers.ModifiableTypes;
 import com.gmail.socraticphoenix.rpg.modifiers.Modifiers;
 import com.gmail.socraticphoenix.rpg.modifiers.SetModifier;
 import com.gmail.socraticphoenix.rpg.options.Options;
+import com.gmail.socraticphoenix.rpg.projectile.ProjectileHandler;
 import com.gmail.socraticphoenix.rpg.registry.RPGRegisterEvent;
 import com.gmail.socraticphoenix.rpg.registry.RPGRegistries;
 import com.gmail.socraticphoenix.rpg.registry.RPGRegistry;
 import com.gmail.socraticphoenix.rpg.registry.RPGRegistryItem;
-import com.gmail.socraticphoenix.rpg.registry.registries.ButtonActionRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.CraftingRecipeRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.GodRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.ItemClickPredicateRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.ModifierRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.OptionRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.QuestObjectiveRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.QuestRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.ScoreboardStatRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.SelectableMenuRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.SpellRegistry;
-import com.gmail.socraticphoenix.rpg.registry.registries.TypeRegistry;
+import com.gmail.socraticphoenix.rpg.registry.registries.*;
 import com.gmail.socraticphoenix.rpg.scoreboard.ScoreboardStats;
 import com.gmail.socraticphoenix.rpg.spell.SpellSlot;
 import com.gmail.socraticphoenix.rpg.spell.Spells;
 import com.gmail.socraticphoenix.rpg.spell.Types;
+import com.gmail.socraticphoenix.rpg.stats.RegenTask;
 import com.gmail.socraticphoenix.rpg.stats.StatChangeListener;
 import com.gmail.socraticphoenix.rpg.stats.StatHelper;
 import com.gmail.socraticphoenix.rpg.translation.TranslationManager;
@@ -72,7 +61,6 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStoppedServerEvent;
-import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -110,31 +98,29 @@ public class RPGPlugin {
     @ConfigDir(sharedRoot = false)
     private Path configDir;
     private Path configPath;
-    private Path songsPath;
     private Path translationsPath;
 
     private RPGRegistries registries;
     private TranslationManager translationManager;
     private RPGDataStorage dataStorage;
 
-
     @Listener(order = Order.PRE)
     public void onPreInit(GamePreInitializationEvent ev) throws IOException {
         configPath = configDir.resolve("config.conf");
-        songsPath = configDir.resolve("songs");
         translationsPath = configDir.resolve("translations");
         try {
-            Files.createDirectories(songsPath);
+            Files.createDirectories(configDir);
+            Files.createDirectories(translationsPath);
         } catch (IOException e) {
-            logger.error("Failed to create songs directory");
+            logger.error("Failed to create config directory");
             e.printStackTrace();
         }
         staticPlugin = plugin;
         registries = new RPGRegistries(this, this.container);
 
         registries.register(new ItemClickPredicateRegistry(),
-                new ButtonActionRegistry(), new SelectableMenuRegistry(),
-                new CraftingRecipeRegistry(), new ScoreboardStatRegistry(), new OptionRegistry(),
+                new ButtonActionRegistry(), new SelectableMenuRegistry()
+                , new ScoreboardStatRegistry(), new OptionRegistry(),
                 new SpellRegistry(), new GodRegistry(), new ModifierRegistry(),
                 new TypeRegistry(), new QuestRegistry(), new QuestObjectiveRegistry());
 
@@ -145,6 +131,7 @@ public class RPGPlugin {
         dataStorage.init();
 
         ScoreboardStats scoreboardStats = new ScoreboardStats();
+        ProjectileHandler projectileHandler = new ProjectileHandler();
 
         EventManager manager = Sponge.getEventManager();
         Scheduler scheduler = Sponge.getScheduler();
@@ -163,11 +150,16 @@ public class RPGPlugin {
         manager.registerListeners(this, new Modifiers());
         manager.registerListeners(this, new Conversations());
         manager.registerListeners(this, new RPGDataRegistrations(this, this.container));
+
         manager.registerListeners(this, scoreboardStats);
+        manager.registerListeners(this, projectileHandler);
 
         scheduler.createTaskBuilder().execute(scoreboardStats).intervalTicks(1).submit(this);
-        scheduler.createTaskBuilder().execute(new RPGTickTask()).intervalTicks(1).submit(this);
+        scheduler.createTaskBuilder().execute(projectileHandler).intervalTicks(1).submit(this);
+
         scheduler.createTaskBuilder().execute(new RegenTask()).intervalTicks(20 * 5).submit(this);
+
+        scheduler.createTaskBuilder().execute(new RPGTickTask()).intervalTicks(1).submit(this);
     }
 
     @Listener
@@ -211,11 +203,6 @@ public class RPGPlugin {
         return configPath;
     }
 
-    public Path getSongsPath() {
-        return songsPath;
-    }
-
-
     @Listener
     public void onLogin(ClientConnectionEvent.Join ev) {
         Player player = ev.getTargetEntity();
@@ -230,23 +217,28 @@ public class RPGPlugin {
                 SetModifier dmgBoost = new SetModifier(Modifiers.SPELL_PERCENTAGE_DAMAGE_BOOST, Items.buildMap(HashMap::new, KeyValue.of(Modifiers.VALUE, 100.0), KeyValue.of(Modifiers.SPELL_TYPE, Types.TRIGGERED)));
 
                 WandData spellSlotData = new WandData(Items.buildList(new SpellSlot(Spells.BLAST, Items.buildList(ClickType.PRIMARY),
-                        Items.buildList(dmgBoost), true, true)), false);
+                        Items.buildList(dmgBoost), Items.buildList(), Spells.BLAST.type(), true)), false);
 
                 WandData spellSlotData2 = new WandData(Items.buildList(
-                        new SpellSlot(Spells.BLAST, Items.buildList(ClickType.PRIMARY), Items.buildList(), false, false)), true);
+                        new SpellSlot(Spells.BLAST, Items.buildList(ClickType.PRIMARY), Items.buildList(), Items.buildList(
+                                new AugmentSlot(AugmentColor.BLUE, ItemStack.empty(), Items.buildList()),
+                                new AugmentSlot(AugmentColor.RED, ItemStack.empty(), Items.buildList())
+                        ), Types.SPELL, false)), true);
 
                 WandData spellSlotData3 = new WandData(Items.buildList(
-                        new SpellSlot(Spells.SLASH, Items.buildList(ClickType.PRIMARY), Items.buildList(), true, false)), false);
+                        new SpellSlot(Spells.SLASH, Items.buildList(ClickType.PRIMARY), Items.buildList(), Items.buildList(), Spells.SLASH.type(), false)), false);
 
-                ItemData data1 = new ItemData(Items.buildList(), new AugmentSlot(AugmentColor.NONE, Items.buildList()), Items.buildList(
-                        new AugmentSlot(AugmentColor.BLUE, Items.buildList()),
-                        new AugmentSlot(AugmentColor.RED, Items.buildList(dmgBoost))
-                ), ItemData.NONE);
-                ItemData data2 = new ItemData(Items.buildList(), new AugmentSlot(AugmentColor.NONE, Items.buildList()), Items.buildList(
-                        new AugmentSlot(AugmentColor.BLUE, Items.buildList(dmgBoost, dmgBoost)),
-                        new AugmentSlot(AugmentColor.RED, Items.buildList())
-                ), ItemData.NONE);
-                ItemData data3 = new ItemData(Items.buildList(), new AugmentSlot(AugmentColor.BLUE, Items.buildList(dmgBoost)), Items.buildList(), ItemData.NONE);
+                ItemData data1 = new ItemData(Items.buildList(), new AugmentSlot(AugmentColor.NONE, ItemStack.empty(), Items.buildList()), Items.buildList(
+                        new AugmentSlot(AugmentColor.BLUE, ItemStack.empty(), Items.buildList()),
+                        new AugmentSlot(AugmentColor.RED, ItemStack.empty(), Items.buildList())
+                ), 0, ItemData.NONE);
+
+                ItemData data2 = new ItemData(Items.buildList(), new AugmentSlot(AugmentColor.NONE, ItemStack.empty(), Items.buildList()), Items.buildList(
+                        new AugmentSlot(AugmentColor.BLUE, ItemStack.empty(), Items.buildList()),
+                        new AugmentSlot(AugmentColor.RED, ItemStack.empty(), Items.buildList())
+                ), 0, ItemData.NONE);
+
+                ItemData data3 = new ItemData(Items.buildList(), new AugmentSlot(AugmentColor.BLUE, ItemStack.empty(), Items.buildList(dmgBoost)), Items.buildList(), 0, ItemData.NONE);
 
                 List<ItemStack> manyWands = Items.buildList(
                         ItemStack.builder()
@@ -280,7 +272,21 @@ public class RPGPlugin {
                                 .itemType(ItemTypes.EMERALD)
                                 .add(Keys.DISPLAY_NAME, Text.of("Emerald Augment of Damage"))
                                 .add(Keys.ITEM_LORE, Spells.wandLore(player, null, data3))
-                                .itemData(new CustomItemDataImpl(data3))
+                                .itemData(new CustomItemDataImpl(data3.copy()))
+                                .build(),
+                        ItemStack.builder()
+                                .quantity(1)
+                                .itemType(ItemTypes.EMERALD)
+                                .add(Keys.DISPLAY_NAME, Text.of("Emerald Augment of Damage"))
+                                .add(Keys.ITEM_LORE, Spells.wandLore(player, null, data3))
+                                .itemData(new CustomItemDataImpl(data3.copy()))
+                                .build(),
+                        ItemStack.builder()
+                                .quantity(1)
+                                .itemType(ItemTypes.EMERALD)
+                                .add(Keys.DISPLAY_NAME, Text.of("Emerald Augment of Damage"))
+                                .add(Keys.ITEM_LORE, Spells.wandLore(player, null, data3))
+                                .itemData(new CustomItemDataImpl(data3.copy()))
                                 .build()
                 );
                 ItemStorage.Flat storage = dta.getInventory().getHotbar().flatView();
@@ -314,19 +320,21 @@ public class RPGPlugin {
 
     @Listener
     public void onLogoff(ClientConnectionEvent.Disconnect ev) {
+        Modifiers.removeAll(ev.getTargetEntity());
         this.dataStorage.saveAndRemove(ev.getTargetEntity());
     }
 
     @Listener
     public void onShutdown(GameStoppedServerEvent ev) {
-        this.dataStorage.saveAll();
+        if (this.dataStorage != null) {
+            this.dataStorage.saveAll();
+        }
     }
 
     @Listener
     public void onRegister(RPGRegisterEvent ev) {
         Types.register(ev);
         ModifiableTypes.register(ev);
-        ev.register(RPGCraftingRecipe.class, new AugmentCraftingRecipe());
     }
 
 }

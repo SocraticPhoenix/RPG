@@ -9,15 +9,18 @@ import org.spongepowered.api.data.persistence.InvalidDataException;
 import java.util.Optional;
 
 public class StatData extends RPGData<StatData> {
-    private int xp;
+    private int level;
+    private int xpSinceLevel;
+
     private int maxHealth;
     private int health;
     private int maxMana;
     private int mana;
 
-    public StatData(int xp, int maxHealth, int health, int maxMana, int mana) {
+    public StatData(int level, int xpSinceLevel, int maxHealth, int health, int maxMana, int mana) {
         super(0);
-        this.xp = xp;
+        this.level = level;
+        this.xpSinceLevel = xpSinceLevel;
         this.maxHealth = maxHealth;
         this.health = health;
         this.maxMana = maxMana;
@@ -25,15 +28,23 @@ public class StatData extends RPGData<StatData> {
     }
 
     public StatData() {
-        this(0, 100, 100, 100, 100);
+        this(0, 0, 100, 100, 100, 100);
     }
 
-    public int getXp() {
-        return xp;
+    public int getLevel() {
+        return level;
     }
 
-    public void setXp(int xp) {
-        this.xp = xp;
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public int getXpSinceLevel() {
+        return xpSinceLevel;
+    }
+
+    public void setXpSinceLevel(int xpSinceLevel) {
+        this.xpSinceLevel = xpSinceLevel;
     }
 
     public int getMaxHealth() {
@@ -70,12 +81,13 @@ public class StatData extends RPGData<StatData> {
 
     @Override
     public StatData copy() {
-        return new StatData(xp, maxHealth, health, maxMana, mana);
+        return new StatData(this.level, this.xpSinceLevel, maxHealth, health, maxMana, mana);
     }
 
     @Override
     public DataContainer fill(DataContainer container) {
-        return container.set(STATS_XP, this.xp)
+        return container.set(STATS_XP, this.xpSinceLevel)
+                .set(STATS_LEVEL, this.level)
                 .set(STATS_MANA, this.mana)
                 .set(STATS_MAX_MANA, this.maxMana)
                 .set(STATS_HEALTH, this.health)
@@ -84,12 +96,13 @@ public class StatData extends RPGData<StatData> {
 
     @Override
     public Optional<StatData> from(DataView container) {
-        if (!container.contains(STATS_XP, STATS_MANA, STATS_HEALTH,
+        if (!container.contains(STATS_XP, STATS_LEVEL, STATS_MANA, STATS_HEALTH,
                 STATS_MAX_HEALTH, STATS_MAX_MANA)) {
             return Optional.empty();
         }
 
-        this.xp = container.getInt(STATS_XP).get();
+        this.level = container.getInt(STATS_LEVEL).get();
+        this.xpSinceLevel = container.getInt(STATS_XP).get();
         this.maxHealth = container.getInt(STATS_MAX_HEALTH).get();
         this.health = container.getInt(STATS_HEALTH).get();
         this.maxMana = container.getInt(STATS_MAX_MANA).get();

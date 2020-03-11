@@ -1,11 +1,11 @@
-package com.gmail.socraticphoenix.rpg.inventory.player.menus;
+package com.gmail.socraticphoenix.rpg.inventory.menus;
 
 import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.data.character.InventoryData;
 import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.ButtonData;
-import com.gmail.socraticphoenix.rpg.inventory.player.ImplementableSelectableMenu;
+import com.gmail.socraticphoenix.rpg.inventory.SelectableMenu;
 import com.gmail.socraticphoenix.rpg.options.values.SetOption;
 import com.gmail.socraticphoenix.rpg.translation.Messages;
 import org.spongepowered.api.data.key.Keys;
@@ -21,7 +21,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.UUID;
 
-public class OptionMenu extends ImplementableSelectableMenu {
+public class OptionMenu extends SelectableMenu {
 
     public OptionMenu() {
         super(RPGPlugin.ID, "options");

@@ -7,14 +7,14 @@ import java.util.Map;
 
 public interface ModifierCondition {
 
-    boolean shouldModifiy(Living target, ModifiableType type, Map<String, Object> arguments, Map<String, Object> context);
+    boolean shouldModifiy(ModifiableType type, Map<String, Object> arguments, Map<String, Object> context);
 
     default ModifierCondition or(ModifierCondition other) {
-        return (player, type, arguments, context) -> this.shouldModifiy(player, type, arguments, context) || other.shouldModifiy(player, type, arguments, context);
+        return (type, arguments, context) -> this.shouldModifiy(type, arguments, context) || other.shouldModifiy(type, arguments, context);
     }
 
     default ModifierCondition and(ModifierCondition other) {
-        return (player, type, arguments, context) -> this.shouldModifiy(player, type, arguments, context) && other.shouldModifiy(player, type, arguments, context);
+        return (type, arguments, context) -> this.shouldModifiy(type, arguments, context) && other.shouldModifiy(type, arguments, context);
     }
 
 }

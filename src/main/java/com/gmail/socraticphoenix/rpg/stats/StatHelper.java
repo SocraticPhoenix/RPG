@@ -14,29 +14,58 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 public interface StatHelper {
+    int[] req = new int[100];
+    int[] total = new int[100];
+
+    static void initXpCache() {
+        if (req[0] == 0) {
+            int sum = 0;
+            for (int i = 0; i < req.length; i++) {
+                int x = (int) (Math.floor(Math.floor(100_000 / (1 + Math.pow(Math.E, -.122 * (i - 37.6649)))) / 100) * 100);
+                sum += x;
+
+                req[i] = x;
+                total[i] = sum;
+            }
+        }
+    }
+
+    static int xpRequiredFor(int level) {
+        if (level < 100) {
+            initXpCache();
+            return req[level];
+        } else {
+            return 100_000;
+        }
+    }
+
+    static int totalXpRequiredFor(int level) {
+        initXpCache();
+        if (level < 100) {
+            return total[level];
+        } else {
+            return total[99] + 100_000 * (level - 99);
+        }
+    }
 
     static int getXp(Player player) {
-        return RPGData.stats(player).get().getXp();
+        return totalXpRequiredFor(getLevel(player)) + RPGData.stats(player).get().getXpSinceLevel();
     }
 
     static int getLevel(Player player) {
-        return getLevel(getXp(player));
-    }
-
-    static int getLevel(long xp) {
-        return (int) (xp / 1000 + 1);
-    }
-
-    static int getXp(int level) {
-        return (level - 1) * 1000;
+        return RPGData.stats(player).get().getLevel();
     }
 
     static int getLevel(Living living) {
         if (living instanceof Player) {
             return getLevel((Player) living);
         } else {
-            return living.get(CustomMobData.class).map(c -> getLevel(c.value().get().getStats().getXp())).orElse(1);
+            return living.get(CustomMobData.class).map(c -> c.value().get().getStats().getLevel()).orElse(0);
         }
+    }
+
+    static int getActualLevel(Living living) {
+        return getLevel(living) + 1;
     }
 
     static void updateBars(Player player) {
@@ -49,11 +78,10 @@ public interface StatHelper {
 
             player.offer(Keys.FOOD_LEVEL, manaDisplay <= 0 ? 0 : mna);
             player.offer(Keys.HEALTH, heartDisplay <= 0 ? 0 : (double) hrts);
-            player.offer(Keys.EXPERIENCE_LEVEL, getLevel(player));
+            player.offer(Keys.EXPERIENCE_LEVEL, data.getLevel());
 
-            int xp = data.getXp() - getXp(getLevel(data.getXp()));
-            int mxXp = getXp(getLevel(data.getXp()) + 1) - getXp(getLevel(data.getXp()));
-
+            int xp = data.getXpSinceLevel();
+            int mxXp = xpRequiredFor(data.getLevel() + 1);
 
             player.offer(Keys.EXPERIENCE_SINCE_LEVEL, (int) (double) xp / mxXp * player.get(Keys.EXPERIENCE_FROM_START_OF_LEVEL).get());
         });

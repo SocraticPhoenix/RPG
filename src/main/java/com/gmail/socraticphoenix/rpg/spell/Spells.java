@@ -1,36 +1,30 @@
 package com.gmail.socraticphoenix.rpg.spell;
 
+import com.flowpowered.math.TrigMath;
 import com.flowpowered.math.imaginary.Quaterniond;
 import com.flowpowered.math.vector.Vector3d;
-import com.gmail.socraticphoenix.collect.Items;
+import com.gmail.socraticphoenix.collect.coupling.KeyValue;
 import com.gmail.socraticphoenix.rpg.augment.AugmentColor;
 import com.gmail.socraticphoenix.rpg.augment.AugmentSlot;
 import com.gmail.socraticphoenix.rpg.click.ClickType;
 import com.gmail.socraticphoenix.rpg.click.ItemClickPredicate;
-import com.gmail.socraticphoenix.rpg.data.mob.MobData;
-import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemData;
-import com.gmail.socraticphoenix.rpg.data.sponge.mob.CustomMobData;
-import com.gmail.socraticphoenix.rpg.event.RPGClickEvent;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.data.character.CooldownData;
 import com.gmail.socraticphoenix.rpg.data.character.SpellBookData;
 import com.gmail.socraticphoenix.rpg.data.item.ItemData;
 import com.gmail.socraticphoenix.rpg.data.item.WandData;
+import com.gmail.socraticphoenix.rpg.data.mob.MobData;
+import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemData;
 import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomWandData;
-import com.gmail.socraticphoenix.rpg.modifiers.ModifiableType;
-import com.gmail.socraticphoenix.rpg.modifiers.ModifiableTypes;
-import com.gmail.socraticphoenix.rpg.modifiers.Modifiers;
-import com.gmail.socraticphoenix.rpg.modifiers.SetModifier;
-import com.gmail.socraticphoenix.rpg.options.values.Option;
+import com.gmail.socraticphoenix.rpg.data.sponge.mob.CustomMobData;
+import com.gmail.socraticphoenix.rpg.event.RPGClickEvent;
+import com.gmail.socraticphoenix.rpg.modifiers.*;
 import com.gmail.socraticphoenix.rpg.registry.RPGRegisterEvent;
-import com.gmail.socraticphoenix.rpg.spell.spells.Blast;
-import com.gmail.socraticphoenix.rpg.spell.spells.DefaultSpell;
-import com.gmail.socraticphoenix.rpg.spell.spells.NoopSpell;
-import com.gmail.socraticphoenix.rpg.spell.spells.Slash;
+import com.gmail.socraticphoenix.rpg.spell.spells.*;
 import com.gmail.socraticphoenix.rpg.stats.StatHelper;
 import com.gmail.socraticphoenix.rpg.translation.Messages;
-import org.spongepowered.api.block.BlockType;
-import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.data.property.block.PassableProperty;
 import org.spongepowered.api.data.property.entity.EyeLocationProperty;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.Living;
@@ -50,13 +44,9 @@ import org.spongepowered.api.util.blockray.BlockRayHit;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.extent.EntityUniverse;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class Spells {
     public static final ItemClickPredicate SPELL_PREDICATE = new SpellSlotPredicate();
@@ -65,24 +55,74 @@ public class Spells {
     public static final Spell NONE = new NoopSpell();
     public static final Spell DEFAULT = new DefaultSpell();
     public static final Spell BLAST = new Blast();
-    public static final Spell SLASH = new Slash();
+    public static final Spell LIGHT_SLASH = new Slash(caster -> Dice.roll(4, 1, 6), "rpg.spells.light_slash");
+    public static final Spell SLASH = new Slash(caster -> Dice.roll(2, StatHelper.getActualLevel(caster), 6), "rpg.spells.slash");
+    public static final Spell ARROW = new Arrow(Types.PHYSICAL_RANGED, "rpg.spells.arrow");
+    public static final Spell DIMENSION_ARROW = new DimensionArrow();
 
     @Listener
     public void onRegister(RPGRegisterEvent ev) {
-        ev.register(Spell.class, NONE, DEFAULT, BLAST, SLASH);
+        ev.register(Spell.class, NONE, DEFAULT, BLAST, LIGHT_SLASH, SLASH, ARROW, DIMENSION_ARROW);
 
         ev.register(ItemClickPredicate.class, SPELL_PREDICATE);
     }
 
-    private static final int words_per_line = 5;
+    private static final int chars_per_line = 40;
+
+    public static List<Text> spellSlotLore(Player player, SpellSlot slot) {
+        Spell spell = slot.getSpell();
+
+        List<Text> lore = new ArrayList<>();
+        lore.add(Text.of(TextColors.BLUE, Messages.translate(player, spell.rawId())));
+
+        for (AugmentSlot aug : slot.getAugmentSlots()) {
+            if (aug.getAugments().isEmpty()) {
+                lore.add(Text.of(aug.getColor().getColor(), Messages.translate(player, "rpg.augment.slot.empty",
+                        Messages.translateString(player, aug.getColor().getKey()))));
+            } else {
+                lore.add(Text.of(aug.getColor().getColor(), Messages.translate(player, "rpg.augment.slot.filled",
+                        Messages.translateString(player, aug.getColor().getKey()))));
+
+                for (SetModifier modifier : aug.getAugments()) {
+                    Spells.limitLoreLine((String) modifier.getModifier().getDesc().apply(player, modifier.getArguments())).forEach(s -> {
+                        lore.add(Text.of(TextColors.LIGHT_PURPLE, s));
+                    });
+                }
+            }
+        }
+
+        List<SetModifier> modifiers = slot.getModifiers();
+        for (SetModifier modifier : modifiers) {
+            Spells.limitLoreLine((String) modifier.getModifier().getDesc().apply(player, modifier.getArguments())).forEach(s -> {
+                lore.add(Text.of(TextColors.DARK_PURPLE, s));
+            });
+        }
+
+        if (slot.isBypass()) {
+            Spells.limitLoreLine(Messages.translateString(player, "rpg.menu.wand.bypass")).forEach(s -> lore.add(Text.of(TextColors.GREEN, s)));
+        }
+
+        if (slot.isRestricted()) {
+            Spells.limitLoreLine(Messages.translateString(player, "rpg.menu.wand.locked",
+                    Messages.translateString(player, slot.getAllowed().getKey()))).forEach(s -> lore.add(Text.of(TextColors.RED, s)));
+        }
+
+        return lore;
+    }
 
     public static List<Text> spellbookLore(Player player, Spell spell) {
         List<Text> result = new ArrayList<>();
-        limitLoreLine(Messages.translateString(player, spell.translateDescKey()), words_per_line).forEach(s -> result.add(Text.of(TextColors.LIGHT_PURPLE, s)));
+        limitLoreLine(Messages.translateString(player, spell.translateDescKey())).forEach(s -> result.add(Text.of(TextColors.LIGHT_PURPLE, s)));
         result.add(Text.EMPTY);
         Cost cost = spell.cost();
         result.add(Text.of(TextColors.AQUA, Messages.translate(player, "rpg.menu.spellbook.mana"), ": ", cost.getMana()));
         result.add(Text.of(TextColors.RED, Messages.translate(player, "rpg.menu.spellbook.cd"), ": ", CooldownData.getFormattedString(player, cost.getCooldown())));
+        result.add(Text.of(TextColors.GREEN, Messages.translate(player, "rpg.menu.spellbook.health"), ": ", cost.getHealth()));
+
+        if (cost.getCharges() > 0) {
+            result.add(Text.of(TextColors.DARK_GRAY, Messages.translate(player, "rpg.menu.spellbook.charges"), ": ", cost.getCharges()));
+        }
+
         result.add(Text.EMPTY);
 
         StringBuilder builder = new StringBuilder();
@@ -94,7 +134,7 @@ public class Spells {
         }
 
         result.add(Text.of(TextColors.BLUE, "Types:"));
-        limitLoreLine(builder.toString(), words_per_line).forEach(s -> result.add(Text.of(TextColors.GRAY, s)));
+        limitLoreLine(builder.toString()).forEach(s -> result.add(Text.of(TextColors.GRAY, s)));
 
         return result;
     }
@@ -111,22 +151,22 @@ public class Spells {
                 result.add(Text.of(equip.getAugment().getColor().getColor(), Messages.translate(player, "rpg.augment.item",
                         Messages.translateString(player, equip.getAugment().getColor().getKey()))));
                 for (SetModifier modifier : equip.getAugment().getAugments()) {
-                    limitLoreLine((String) modifier.getModifier().getDesc().apply(player, modifier.getArguments()), words_per_line).forEach(s -> {
+                    limitLoreLine((String) modifier.getModifier().getDesc().apply(player, modifier.getArguments())).forEach(s -> {
                         result.add(Text.of(TextColors.LIGHT_PURPLE, s));
                     });
                 }
             }
 
-            for (AugmentSlot slot : equip.getAugmentSlots()) {
-                if (slot.getAugments().isEmpty()) {
-                    result.add(Text.of(slot.getColor().getColor(), Messages.translate(player, "rpg.augment.slot.empty",
-                            Messages.translateString(player, slot.getColor().getKey()))));
+            for (AugmentSlot aug : equip.getAugmentSlots()) {
+                if (aug.getAugments().isEmpty()) {
+                    result.add(Text.of(aug.getColor().getColor(), Messages.translate(player, "rpg.augment.slot.empty",
+                            Messages.translateString(player, aug.getColor().getKey()))));
                 } else {
-                    result.add(Text.of(slot.getColor().getColor(), Messages.translate(player, "rpg.augment.slot.filled",
-                            Messages.translateString(player, slot.getColor().getKey()))));
+                    result.add(Text.of(aug.getColor().getColor(), Messages.translate(player, "rpg.augment.slot.filled",
+                            Messages.translateString(player, aug.getColor().getKey()))));
 
-                    for (SetModifier modifier : slot.getAugments()) {
-                        limitLoreLine((String) modifier.getModifier().getDesc().apply(player, modifier.getArguments()), words_per_line).forEach(s -> {
+                    for (SetModifier modifier : aug.getAugments()) {
+                        limitLoreLine((String) modifier.getModifier().getDesc().apply(player, modifier.getArguments())).forEach(s -> {
                             result.add(Text.of(TextColors.LIGHT_PURPLE, s));
                         });
                     }
@@ -134,7 +174,7 @@ public class Spells {
             }
 
             for (SetModifier modifier : equip.getModifiers()) {
-                limitLoreLine((String) modifier.getModifier().getDesc().apply(player, modifier.getArguments()), words_per_line).forEach(s -> {
+                limitLoreLine((String) modifier.getModifier().getDesc().apply(player, modifier.getArguments())).forEach(s -> {
                     result.add(Text.of(TextColors.DARK_PURPLE, s));
                 });
             }
@@ -161,8 +201,8 @@ public class Spells {
                     builder = Text.of(TextColors.GREEN, "[", builder, TextColors.GREEN, "]");
                 }
 
-                if (slot.isLocked()) {
-                    builder = Text.of(TextColors.RED, TextStyles.BOLD, "[", TextStyles.RESET, builder, TextColors.RED, TextStyles.BOLD, "]");
+                if (slot.isRestricted()) {
+                    builder = Text.of(TextColors.RED, "[", TextStyles.RESET, builder, TextStyles.BOLD, "]");
                 }
 
                 result.add(Text.of(prefix, ": ", builder));
@@ -172,24 +212,50 @@ public class Spells {
         return result;
     }
 
-    public static void damage(Living caster, Living target, Spell spell, double damage) {
+    public static void flatKnockback(Living caster, Living target, List<SetModifier> casterMods, double power, Vector3d source, Spell spell) {
+        knockback(caster, target, casterMods, power, new Vector3d(source.getX(), target.getLocation().getPosition().getY(), source.getZ()), spell);
+    }
+
+    public static void flatKnockback(Living caster, Living target, List<SetModifier> casterMods, double power, Vector3d source, Type type, KeyValue<String, Object>... context) {
+        knockback(caster, target, casterMods, power, new Vector3d(source.getX(), target.getLocation().getPosition().getY(), source.getZ()), type, context);
+    }
+
+    public static void knockback(Living caster, Living target, List<SetModifier> casterMods, double power, Vector3d source, Spell spell) {
+        knockback(caster, target, casterMods, power, source, spell.type(), KeyValue.of(Modifiers.SPELL, spell), KeyValue.of(Modifiers.SPELL_TYPE, spell));
+    }
+
+    public static void knockback(Living caster, Living target, List<SetModifier> casterMods, double power, Vector3d source, Type type, KeyValue<String, Object>... context) {
+        Map<String, Object> contextMap = new HashMap<>();
+        contextMap.put(Modifiers.ELEMENT_TYPE, type);
+        contextMap.put(Modifiers.CAUSER, target);
+        contextMap.put(Modifiers.RECEIVER, target);
+        Stream.of(context).forEach(k -> contextMap.put(k.getKey(), k.getValue()));
+
+        List<SetModifier> targetMods = Modifiers.getRelevant(target);
+        power = Modifiers.modify(power, ModifiableTypes.KNOCKBACK, contextMap, KeyValue.of(caster, casterMods), KeyValue.of(target, targetMods));
+
+        target.setVelocity(target.getVelocity().add(target.getLocation().getPosition().sub(source).normalize().mul(power)));
+    }
+
+    public static void damage(Living caster, Living target, List<SetModifier> casterMods, double damage, Spell spell) {
+        damage(caster, target, casterMods, damage, spell.type(), KeyValue.of(Modifiers.SPELL, spell), KeyValue.of(Modifiers.SPELL_TYPE, spell.type()));
+    }
+
+    public static void damage(Living caster, Living target, List<SetModifier> casterMods, double damage, Type type, KeyValue<String, Object>... context) {
         target.damage(0, SOURCE);
-        damage = modifyStat(caster, ModifiableTypes.DAMAGE_INCREASE, damage, spell, Modifiers.getRelevant(caster));
-        damage = modifyStat(target, ModifiableTypes.DAMAGE_REDUCTION, damage, spell, Modifiers.getRelevant(target));
-        applyHitModifiers(caster, target, spell, Modifiers.getRelevant(caster));
+
+        Map<String, Object> contextMap = new HashMap<>();
+        contextMap.put(Modifiers.ELEMENT_TYPE, type);
+        contextMap.put(Modifiers.CAUSER, target);
+        contextMap.put(Modifiers.RECEIVER, target);
+        Stream.of(context).forEach(k -> contextMap.put(k.getKey(), k.getValue()));
+
+        List<SetModifier> targetMods = Modifiers.getRelevant(target);
+
+        damage = Modifiers.modify(damage, ModifiableTypes.DAMAGE, contextMap, KeyValue.of(caster, casterMods), KeyValue.of(target, targetMods));
         StatHelper.damage(target, damage, caster);
-    }
 
-    public static <T> T modifyStat(Living caster, ModifiableType stat, T value, Spell spell, List<SetModifier> modifiers) {
-        Map<String, Object> context = new HashMap<>();
-        context.put(Modifiers.SPELL, spell);
-        return Modifiers.modify(caster, value, stat, context, modifiers);
-    }
-
-    public static void applyHitModifiers(Living caster, Living target, Spell spell, List<SetModifier> modifiers) {
-        Map<String, Object> context = new HashMap<>();
-        context.put(Modifiers.SPELL, spell);
-        Modifiers.modify(caster, target, ModifiableTypes.ON_HIT, context, modifiers);
+        Modifiers.modify(damage, ModifiableTypes.ON_DAMAGE, contextMap, KeyValue.of(caster, casterMods), KeyValue.of(target, targetMods));
     }
 
     public static String clickString(Player player, List<ClickType> seq) {
@@ -198,7 +264,7 @@ public class Spells {
         return builder.toString();
     }
 
-    public static List<String> limitLoreLine(String str, int wordsPerLine) {
+    public static List<String> limitLoreLine(String str) {
         List<String> strings = new ArrayList<>();
 
         String[] words = str.split(" ");
@@ -207,9 +273,9 @@ public class Spells {
         StringBuilder builder = new StringBuilder();
 
         while (index < words.length) {
-            int limit = index + wordsPerLine;
-            for (int i = index; i < limit && index < words.length; i++, index++) {
-                builder.append(words[i]).append(" ");
+            int limit = 0;
+            for (; limit < chars_per_line && index < words.length; limit += words[index].length(), index++) {
+                builder.append(words[index]).append(" ");
             }
             strings.add(builder.toString());
             builder = new StringBuilder();
@@ -256,7 +322,7 @@ public class Spells {
                 return;
             }
 
-            List<SetModifier> relevant = Modifiers.getRelevant(player);
+            List<SetModifier> relevant = Modifiers.snapshotRelevant(player);
             relevant.addAll(modifiers);
 
             Map<String, Object> context = new HashMap<>();
@@ -266,33 +332,68 @@ public class Spells {
 
             double mana = cost.getMana();
             double cooldown = cost.getCooldown();
+            double health = cost.getHealth();
+            double charges = cost.getCharges();
 
             mana = Modifiers.modify(player, mana, ModifiableTypes.COST_MANA, context, relevant);
             cooldown = Modifiers.modify(player, cooldown, ModifiableTypes.COST_COOLDOWN, context, relevant);
+            health = Modifiers.modify(player, health, ModifiableTypes.COST_HEALTH, context, relevant);
+            charges = Modifiers.modify(player, charges, ModifiableTypes.CHARGES, context, relevant);
 
-            if (StatHelper.getMana(player) < cost.getMana()) {
+            if (cost.hasCharges()) {
+                if (!manager.hasCharges(spell, (int) charges)) {
+                    player.sendTitle(Title.builder()
+                            .actionBar(Text.of(TextColors.RED, Messages.translate(player, spell.rawId()), " - ", Messages.translate(player, "rpg.spells.msg.charges")))
+                            .stay(1)
+                            .build());
+                    return;
+                }
+            }
+
+            if (StatHelper.getMana(player) < mana) {
                 player.sendTitle(Title.builder()
                         .actionBar(Text.of(TextColors.RED, Messages.translate(player, spell.rawId()), " - ", Messages.translate(player, "rpg.spells.msg.mana")))
+                        .stay(1)
+                        .build());
+                return;
+            } else if (StatHelper.getHealth(player) < health) {
+                player.sendTitle(Title.builder()
+                        .actionBar(Text.of(TextColors.RED, Messages.translate(player, spell.rawId()), " - ", Messages.translate(player, "rpg.spells.msg.health")))
                         .stay(1)
                         .build());
                 return;
             }
 
             manager.put(spell, (int) cooldown);
+            manager.reduceCharges(spell, (int) charges);
             StatHelper.setMana(player, StatHelper.getMana(player) - (int) mana);
+            StatHelper.setHealth(player, StatHelper.getHealth(player) - (int) health);
+
             spell.activate(player, modifiers);
-            player.sendTitle(Title.builder()
-                    .actionBar(Text.of(TextColors.GREEN, Messages.translate(player, spell.rawId()), " - ", Messages.translate(player, "rpg.spells.msg.cast")))
-                    .stay(1)
-                    .build());
+
+            if (cost.hasCharges()) {
+                player.sendTitle(Title.builder()
+                        .actionBar(Text.of(TextColors.GREEN, Messages.translate(player, spell.rawId()), " - ", Messages.translate(player, "rpg.spells.msg.cast_charges", manager.getCharges(spell), manager.maxCharges(spell))))
+                        .stay(1)
+                        .build());
+            } else {
+                player.sendTitle(Title.builder()
+                        .actionBar(Text.of(TextColors.GREEN, Messages.translate(player, spell.rawId()), " - ", Messages.translate(player, "rpg.spells.msg.cast")))
+                        .stay(1)
+                        .build());
+            }
         });
     }
 
     public static final Predicate<BlockRayHit<World>> HIT_FILTER = b -> {
-        BlockType type = b.getExtent().getBlockType(b.getBlockPosition());
-        return type == BlockTypes.AIR ||
-                type == BlockTypes.WATER || type == BlockTypes.FLOWING_WATER ||
-                type == BlockTypes.LAVA || type == BlockTypes.FLOWING_LAVA;
+        BlockState block = b.getExtent().getBlock(b.getBlockPosition());
+
+        Optional<PassableProperty> property = block.getProperty(PassableProperty.class);
+        if (property.isPresent()) {
+            return property.get().getValue();
+        } else {
+            return false;
+        }
     };
 
     public static Vector3d getIntersection(World world, Vector3d start, Vector3d direction, Predicate<Entity> friends, double range) {
@@ -367,17 +468,6 @@ public class Spells {
         }
     }
 
-    public static void knockback(Entity target, Vector3d source, double power) {
-        target.setVelocity(target.getVelocity().add(target.getLocation().getPosition().sub(source).normalize().mul(power)));
-    }
-
-    public static void flatKnockback(Entity target, Vector3d source, double power) {
-        Vector3d vel = target.getLocation().getPosition().sub(source);
-        vel = new Vector3d(vel.getX(), 0, vel.getZ());
-        target.setVelocity(target.getVelocity().add(vel.normalize().mul(power)));
-    }
-
-
     public static Vector3d getStartLocation(Entity caster) {
         if (caster.getProperty(EyeLocationProperty.class).isPresent()) {
             return caster.getProperty(EyeLocationProperty.class).get().getValue();
@@ -386,11 +476,45 @@ public class Spells {
         }
     }
 
-    public static Set<Living> getIntersecting(Living caster, AABB aabb, Predicate<Entity> friends) {
-        return (Set<Living>) (Set) caster.getWorld().getIntersectingEntities(aabb, e -> e instanceof Living && !friends.test(e));
+    public static Set<Living> getIntersectingRectangle(Living caster, Vector3d source, AABB aabb, Predicate<Entity> filter) {
+        return (Set) caster.getWorld().getIntersectingEntities(aabb, e -> e instanceof Living && filter.test(e) && hasLos(source, e));
     }
 
-    public static Predicate<Entity> friends(Living caster) {
+    public static Set<Living> getIntersectingSphere(Living caster, Vector3d center, double radius, Predicate<Entity> filter) {
+        double radMx = radius + 1;
+        double rSq = radius * radius;
+        AABB max = new AABB(center.add(radMx, radMx, radMx), center.sub(radMx, radMx, radMx));
+
+        return (Set) caster.getWorld().getIntersectingEntities(max, e -> e instanceof Living && e.getLocation().getPosition().distanceSquared(center) <= rSq && filter.test(e) && hasLos(center, e));
+    }
+
+    public static Set<Living> getIntersectingCone(Living caster, Vector3d center, Vector3d direction, double radius, double angleDegs, Predicate<Entity> filter) {
+        double radMx = radius + 1;
+        double rSq = radius * radius;
+        double mag = direction.length();
+        AABB max = new AABB(center.add(radMx, radMx, radMx), center.sub(radMx, radMx, radMx));
+
+        return (Set) caster.getWorld().getIntersectingEntities(max, e -> {
+            if (e instanceof Living && e.getLocation().getPosition().distanceSquared(center) <= rSq && filter.test(e) && hasLos(center, e)) {
+                Vector3d newDir = e.getLocation().getPosition().sub(center);
+
+                double ang = TrigMath.acos(direction.dot(newDir) / (mag * newDir.length()));
+                return ang < Math.toRadians(angleDegs);
+            }
+            return false;
+        });
+    }
+
+    public static boolean hasLos(Vector3d center, Entity entity) {
+        return BlockRay.from(entity.getWorld(), center).to(entity.getLocation().getPosition()).skipFilter(HIT_FILTER).end()
+            .map(HIT_FILTER::test).orElse(true);
+    }
+
+    public static Predicate<Entity> enemies(Entity caster) {
+        return friends(caster).negate();
+    }
+
+    public static Predicate<Entity> friends(Entity caster) {
         if (caster instanceof Player) {
             return e -> {
                 if (e == caster || e instanceof Player) {
@@ -423,21 +547,23 @@ public class Spells {
     }
 
     public static void cast(Player player, SpellSlot slot) {
-        cast(player, slot.getSpell(), slot.getModifiers(), !slot.isBypass());
+        cast(player, slot.getSpell(), slot.getAllMods(), !slot.isBypass());
     }
 
     @Listener
     public void onClick(RPGClickEvent ev, @First Player player) {
         if (ev.getStack().get(CustomWandData.class).isPresent()) {
-            CustomWandData data = ev.getStack().get(CustomWandData.class).get();
-            for (SpellSlot slot : data.value().get().getSlots()) {
-                if (slot.getSequence().equals(ev.getSequence())) {
-                    cast(player, slot);
-                    return;
+            if (RPGData.canUse(ev.getStack(), player)) {
+                CustomWandData data = ev.getStack().get(CustomWandData.class).get();
+                for (SpellSlot slot : data.value().get().getSlots()) {
+                    if (slot.getSequence().equals(ev.getSequence())) {
+                        cast(player, slot);
+                        return;
+                    }
                 }
-            }
 
-            player.clearTitle();
+                player.clearTitle();
+            }
         }
     }
 

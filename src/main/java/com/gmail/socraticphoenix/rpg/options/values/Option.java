@@ -4,18 +4,16 @@ import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.data.character.InventoryData;
 import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
+import com.gmail.socraticphoenix.rpg.inventory.SelectableMenu;
 import com.gmail.socraticphoenix.rpg.inventory.button.ButtonAction;
-import com.gmail.socraticphoenix.rpg.inventory.player.SelectableMenu;
-import com.gmail.socraticphoenix.rpg.inventory.player.menus.OptionMenu;
+import com.gmail.socraticphoenix.rpg.inventory.SimpleSelectableMenu;
+import com.gmail.socraticphoenix.rpg.inventory.menus.OptionMenu;
 import com.gmail.socraticphoenix.rpg.registry.RPGRegistryItem;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.type.GridInventory;
 import org.spongepowered.api.text.Text;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public interface Option<T> extends RPGRegistryItem {
 

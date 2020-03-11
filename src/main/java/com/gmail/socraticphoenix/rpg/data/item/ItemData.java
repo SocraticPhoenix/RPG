@@ -9,6 +9,7 @@ import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.persistence.DataBuilder;
 import org.spongepowered.api.data.persistence.InvalidDataException;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,19 +23,25 @@ public class ItemData extends RPGData<ItemData> {
     private List<SetModifier> modifiers;
     private AugmentSlot augment;
     private List<AugmentSlot> augmentSlots;
+    private int minLevel;
 
     private UUID owner;
 
-    public ItemData(List<SetModifier> modifiers, AugmentSlot augment, List<AugmentSlot> augmentSlots, UUID owner) {
+    public ItemData(List<SetModifier> modifiers, AugmentSlot augment, List<AugmentSlot> augmentSlots, int minLevel, UUID owner) {
         super(0);
         this.modifiers = modifiers;
         this.owner = owner;
         this.augmentSlots = augmentSlots;;
         this.augment = augment;
+        this.minLevel = minLevel;
     }
 
     public ItemData() {
-        this(new ArrayList<>(), new AugmentSlot(AugmentColor.NONE, new ArrayList<>()), new ArrayList<>(), NONE);
+        this(new ArrayList<>(), new AugmentSlot(AugmentColor.NONE, ItemStack.empty(), new ArrayList<>()), new ArrayList<>(), 0, NONE);
+    }
+
+    public int getMinLevel() {
+        return minLevel;
     }
 
     public List<AugmentSlot> getAugmentSlots() {
@@ -55,7 +62,7 @@ public class ItemData extends RPGData<ItemData> {
 
     @Override
     public ItemData copy() {
-        return new ItemData(this.modifiers.stream().map(SetModifier::copy).collect(Collectors.toList()), this.augment.copy(), this.augmentSlots.stream().map(AugmentSlot::copy).collect(Collectors.toList()), this.owner);
+        return new ItemData(this.modifiers.stream().map(SetModifier::copy).collect(Collectors.toList()), this.augment.copy(), this.augmentSlots.stream().map(AugmentSlot::copy).collect(Collectors.toList()), this.minLevel, this.owner);
     }
 
     @Override
@@ -63,6 +70,7 @@ public class ItemData extends RPGData<ItemData> {
         return container.set(MODIFIERS, this.modifiers)
                 .set(AUGMENT_SLOTS, this.augmentSlots)
                 .set(AUGMENTS, this.augment)
+                .set(MIN_LEVEL, this.minLevel)
                 .set(OWNER, this.owner);
     }
 
@@ -76,6 +84,7 @@ public class ItemData extends RPGData<ItemData> {
         this.owner = container.getObject(OWNER, UUID.class).get();
         this.augment = container.getSerializable(AUGMENTS, AugmentSlot.class).get();
         this.augmentSlots = container.getSerializableList(AUGMENT_SLOTS, AugmentSlot.class).get();
+        this.minLevel = container.getInt(MIN_LEVEL).get();
 
         if(this.owner.equals(NONE)) {
             this.owner = NONE;

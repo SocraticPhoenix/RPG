@@ -58,16 +58,13 @@ public class ScoreboardStats implements Runnable {
     public static final ScoreboardStat LAST_NAME = new ScoreboardStat(p -> {
         return Text.of(RPGData.active(p).map(CharacterData::getLastName).orElse(""));
     }, p -> Messages.translate(p, "rpg.scoreboard.last_name"), RPGPlugin.ID, "last_name");
-    public static final ScoreboardStat TOTAL_XP = new ScoreboardStat(p -> {
-        return Text.of(TextColors.DARK_GREEN, Messages.translate(p, "rpg.scoreboard.total_xp"), ": ", RPGData.stats(p).map(StatData::getXp).orElse(0));
-    }, p -> Messages.translate(p, "rpg.scoreboard.total_xp"), RPGPlugin.ID, "total_xp");
-    public static final ScoreboardStat LEVEL = new ScoreboardStat(p -> {
-        return Text.of(TextColors.DARK_GREEN, Messages.translate(p, "rpg.scoreboard.level"), ": ", StatHelper.getLevel(p));
+     public static final ScoreboardStat LEVEL = new ScoreboardStat(p -> {
+        return Text.of(TextColors.DARK_GREEN, Messages.translate(p, "rpg.scoreboard.level"), ": ", StatHelper.getActualLevel(p));
     }, p -> Messages.translate(p, "rpg.scoreboard.level"), RPGPlugin.ID, "level");
 
     @Listener
     public void onRegister(RPGRegisterEvent ev) {
-        ev.register(ScoreboardStat.class, HEALTH, MANA, COORDINATES, X, Y, Z, COMPASS, FIRST_NAME, LAST_NAME, PLAYER_COUNT, LEVEL, TOTAL_XP);
+        ev.register(ScoreboardStat.class, HEALTH, MANA, COORDINATES, X, Y, Z, COMPASS, FIRST_NAME, LAST_NAME, PLAYER_COUNT, LEVEL);
     }
 
     @Override

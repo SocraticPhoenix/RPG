@@ -2,8 +2,6 @@ package com.gmail.socraticphoenix.rpg.data.character;
 
 import com.gmail.socraticphoenix.collect.Items;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
-import com.gmail.socraticphoenix.rpg.inventory.SelectableMenus;
-import com.gmail.socraticphoenix.rpg.inventory.player.SelectableMenu;
 import com.gmail.socraticphoenix.rpg.inventory.storage.ItemStorage;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataView;
@@ -27,11 +25,12 @@ public class InventoryData extends RPGData<InventoryData> {
     private ItemStack chestplate;
     private ItemStack leggings;
     private ItemStack boots;
-    private ItemStack wand;
+    private ItemStack wandEditing;
+    private ItemStack augmentEditing;
     private int selectedSlot;
     private int maxPage;
 
-    public InventoryData(List<ItemStorage> bankPages, ItemStorage carried, ItemStorage hotbar, ItemStorage trinkets, ItemStorage ammo, ItemStorage potions, ItemStorage crafting, ItemStack helmet, ItemStack chestplate, ItemStack leggings, ItemStack boots, ItemStack wand, int selectedSlot, int maxPage) {
+    public InventoryData(List<ItemStorage> bankPages, ItemStorage carried, ItemStorage hotbar, ItemStorage trinkets, ItemStorage ammo, ItemStorage potions, ItemStorage crafting, ItemStack helmet, ItemStack chestplate, ItemStack leggings, ItemStack boots, ItemStack wandEditing, ItemStack augmentEditing, int selectedSlot, int maxPage) {
         super(0);
         this.bankPages = bankPages;
         this.carried = carried;
@@ -44,7 +43,8 @@ public class InventoryData extends RPGData<InventoryData> {
         this.chestplate = chestplate;
         this.leggings = leggings;
         this.boots = boots;
-        this.wand = wand;
+        this.wandEditing = wandEditing;
+        this.augmentEditing = augmentEditing;
         this.selectedSlot = selectedSlot;
         this.maxPage = maxPage;
     }
@@ -149,12 +149,20 @@ public class InventoryData extends RPGData<InventoryData> {
         this.crafting = crafting;
     }
 
-    public ItemStack getWand() {
-        return wand;
+    public ItemStack getWandEditing() {
+        return wandEditing;
     }
 
-    public void setWand(ItemStack wand) {
-        this.wand = wand;
+    public void setWandEditing(ItemStack wandEditing) {
+        this.wandEditing = wandEditing;
+    }
+
+    public ItemStack getAugmentEditing() {
+        return augmentEditing;
+    }
+
+    public void setAugmentEditing(ItemStack augmentEditing) {
+        this.augmentEditing = augmentEditing;
     }
 
     public InventoryData() {
@@ -170,6 +178,7 @@ public class InventoryData extends RPGData<InventoryData> {
                 ItemStack.empty(),
                 ItemStack.empty(),
                 ItemStack.empty(),
+                ItemStack.empty(),
                 0,
                 10);
     }
@@ -178,7 +187,8 @@ public class InventoryData extends RPGData<InventoryData> {
     public InventoryData copy() {
         return new InventoryData(this.bankPages.stream().map(ItemStorage::copy).collect(Collectors.toList()),
                 this.carried.copy(), this.hotbar.copy(), this.trinkets.copy(), this.ammo.copy(), this.potions.copy(), this.crafting.copy(),
-                this.helmet.copy(), this.chestplate.copy(), this.leggings.copy(), this.boots.copy(), this.wand.copy(), this.selectedSlot, this.maxPage);
+                this.helmet.copy(), this.chestplate.copy(), this.leggings.copy(), this.boots.copy(), this.wandEditing.copy(),
+                this.augmentEditing.copy(), this.selectedSlot, this.maxPage);
     }
 
     @Override
@@ -194,7 +204,8 @@ public class InventoryData extends RPGData<InventoryData> {
                 .set(INVENTORY_CHESTPLATE, this.chestplate)
                 .set(INVENTORY_LEGGINGS, this.leggings)
                 .set(INVENTORY_BOOTS, this.boots)
-                .set(INVENTORY_WAND, this.wand)
+                .set(INVENTORY_WAND, this.wandEditing)
+                .set(INVENTORY_AUGMENTING, this.augmentEditing)
                 .set(INVENTORY_SELECTED_SLOT, this.selectedSlot)
                 .set(INVENTORY_MAX_PAGE, this.maxPage);
     }
@@ -203,7 +214,7 @@ public class InventoryData extends RPGData<InventoryData> {
     public Optional<InventoryData> from(DataView container) {
         if (!container.contains(INVENTORY_PAGES, INVENTORY_CARRIED, INVENTORY_HOTBAR, INVENTORY_TRINKETS,
                 INVENTORY_AMMO, INVENTORY_POTIONS, INVENTORY_CRAFTING, INVENTORY_HELMET, INVENTORY_CHESTPLATE, INVENTORY_WAND,
-                INVENTORY_LEGGINGS, INVENTORY_BOOTS, INVENTORY_SELECTED_SLOT, INVENTORY_MAX_PAGE)) {
+                INVENTORY_AUGMENTING, INVENTORY_LEGGINGS, INVENTORY_BOOTS, INVENTORY_SELECTED_SLOT, INVENTORY_MAX_PAGE)) {
             return Optional.empty();
         }
 
@@ -218,7 +229,8 @@ public class InventoryData extends RPGData<InventoryData> {
         this.chestplate = container.getSerializable(INVENTORY_CHESTPLATE, ItemStack.class).get();
         this.leggings = container.getSerializable(INVENTORY_LEGGINGS, ItemStack.class).get();
         this.boots = container.getSerializable(INVENTORY_BOOTS, ItemStack.class).get();
-        this.wand = container.getSerializable(INVENTORY_WAND, ItemStack.class).get();
+        this.wandEditing = container.getSerializable(INVENTORY_WAND, ItemStack.class).get();
+        this.augmentEditing = container.getSerializable(INVENTORY_AUGMENTING, ItemStack.class).get();
         this.selectedSlot = container.getInt(INVENTORY_SELECTED_SLOT).get();
         this.maxPage = container.getInt(INVENTORY_MAX_PAGE).get();
 

@@ -2,9 +2,7 @@ package com.gmail.socraticphoenix.rpg.inventory;
 
 import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
-import com.gmail.socraticphoenix.rpg.data.character.InventoryData;
 import com.gmail.socraticphoenix.rpg.inventory.button.ButtonAction;
-import com.gmail.socraticphoenix.rpg.inventory.player.SelectableMenu;
 import com.gmail.socraticphoenix.rpg.registry.RPGRegisterEvent;
 import org.spongepowered.api.event.Listener;
 

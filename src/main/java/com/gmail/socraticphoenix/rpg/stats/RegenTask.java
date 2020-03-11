@@ -1,4 +1,4 @@
-package com.gmail.socraticphoenix.rpg;
+package com.gmail.socraticphoenix.rpg.stats;
 
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.modifiers.ModifiableType;

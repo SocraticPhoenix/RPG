@@ -47,7 +47,7 @@ public class Blast extends AbstractSpell {
             .type(ParticleTypes.LARGE_EXPLOSION).build());
 
     public Blast() {
-        super(Items.buildList(Types.TRIGGERED, Types.INHERITABLE, Types.NOVICE), Cost.seconds(2, 5), "rpg.spells.blast", ItemTypes.FIRE_CHARGE, RPGPlugin.ID);
+        super(Items.buildList(Types.TRIGGERED, Types.INHERITABLE), Cost.of(2, 5), "rpg.spells.blast", ItemTypes.FIRE_CHARGE, RPGPlugin.ID);
     }
 
     @Override
@@ -55,24 +55,14 @@ public class Blast extends AbstractSpell {
         Vector3d start = Spells.getStartLocation(caster);
         Vector3d central = Spells.getIntersection(caster, e -> e.equals(caster), 10);
 
-        Spells.getIntersecting(caster, Spells.area(central, 3), Spells.friends(caster)).forEach(e -> {
-            Spells.damage(caster, e, this, Dice.roll(4, StatHelper.getLevel(caster) * 2, 6));
-            Spells.knockback(e, central, 1);
+        Spells.getIntersectingSphere(caster, central, 3, Spells.enemies(caster)).forEach(e -> {
+            Spells.damage(caster, e, modifiers, Dice.roll(4, StatHelper.getActualLevel(caster) * 2, 6), this);
+            Spells.knockback(caster, e, modifiers, 1, central, this);
         });
 
         Animation.drawLine(caster.getWorld(), start, central, 0.5, pixel1);
         Animation.draw(caster.getWorld(), central, pixel2);
         caster.getWorld().playSound(SoundTypes.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE, central, 0.5);
-    }
-
-    @Override
-    public List<SetModifier> passiveModifiers() {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public void deactivate(Living caster) {
-
     }
 
 }

@@ -76,6 +76,15 @@ minecraft {
 //End Repositories and Dependencies
 
 //Tasks
+task packageTranslations(type: Zip) {
+    archiveFileName = "translations.zip"
+    destinationDirectory = file("./src/main/resources/assets/socraticrpg")
+
+    from("./translations")
+}
+
+processResources.dependsOn(packageTranslations)
+
 javadoc {
     destinationDir = file("docs")
 }

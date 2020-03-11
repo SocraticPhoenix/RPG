@@ -2,7 +2,7 @@ package com.gmail.socraticphoenix.rpg.options.values.type;
 
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.data.character.InventoryData;
-import com.gmail.socraticphoenix.rpg.inventory.player.menus.OptionMenu;
+import com.gmail.socraticphoenix.rpg.inventory.menus.OptionMenu;
 import com.gmail.socraticphoenix.rpg.options.values.Option;
 import com.gmail.socraticphoenix.rpg.options.values.SetOption;
 import com.gmail.socraticphoenix.rpg.options.values.set.BasicSetOption;

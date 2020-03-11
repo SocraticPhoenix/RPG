@@ -41,8 +41,7 @@ public class AbstractRegistryItem<Q extends RPGRegistryItem> implements RPGRegis
     public DataContainer toContainer() {
         return DataContainer.createNew()
                 .set(RPGData.ID, id)
-                .set(RPGData.OWNER, this.pluginId)
-                .set(RPGData.TYPE, this.getClass().getName());
+                .set(RPGData.OWNER, this.pluginId);
     }
 
 }

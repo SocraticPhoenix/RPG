@@ -1,62 +1,45 @@
-package com.gmail.socraticphoenix.rpg.inventory.player;
+package com.gmail.socraticphoenix.rpg.inventory;
 
 import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
 import com.gmail.socraticphoenix.rpg.data.character.InventoryData;
-import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
-import com.gmail.socraticphoenix.rpg.inventory.SelectableMenus;
+import com.gmail.socraticphoenix.rpg.inventory.SimpleSelectableMenu;
 import com.gmail.socraticphoenix.rpg.inventory.button.ButtonAction;
 import com.gmail.socraticphoenix.rpg.registry.AbstractRegistryItem;
-import com.gmail.socraticphoenix.rpg.registry.RPGRegistryItem;
-import io.github.socraticphoenix.inversey.Consumer3;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.type.GridInventory;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-public class SelectableMenu extends AbstractRegistryItem<RPGRegistryItem> {
+public abstract class SelectableMenu extends AbstractRegistryItem<SelectableMenu> {
     private String pluginId;
     private String id;
 
-    protected Function<Player, ItemStack> button;
-    protected Consumer3<Player, InventoryData, GridInventory> sync;
-    protected Consumer3<Player, InventoryData, GridInventory> update;
-    protected BiFunction<Player, InventoryData, String> name;
-    protected Function<Player, Integer> maxPage;
-
-    public SelectableMenu(Function<Player, Integer> maxPage, Function<Player, ItemStack> button, Consumer3<Player, InventoryData, GridInventory> update, Consumer3<Player, InventoryData, GridInventory> sync, BiFunction<Player, InventoryData, String> name, String pluginId, String id) {
-        super(pluginId, id);
-        this.maxPage = maxPage;
-        this.button = button;
-        this.sync = sync;
-        this.update = update;
-        this.name = name;
-        this.pluginId = pluginId;
-        this.id = id;
-    }
-
-    protected SelectableMenu(String pluginId, String id) {
+    public SelectableMenu(String pluginId, String id) {
         super(pluginId, id);
         this.pluginId = pluginId;
         this.id = id;
     }
 
-    public Function<Player, ItemStack> button() {
-        return this.button;
-    }
+    public abstract ItemStack button(Player player);
+
+    public abstract void update(Player player, InventoryData data, GridInventory inventory);
+
+    public abstract void sync(Player player, InventoryData data, GridInventory inventory);
+
+    public abstract String name(Player player, InventoryData data);
+
+    public abstract int maxPage(Player player);
 
     public String name(Player player) {
-        return RPGData.inventory(player).map(data -> name.apply(player, data)).orElse("");
+        return RPGData.inventory(player).map(data -> this.name(player, data)).orElse("");
     }
 
     public void sync(Player player, GridInventory inventory) {
-        RPGData.inventory(player).ifPresent(data -> sync.accept(player, data, inventory));
+        RPGData.inventory(player).ifPresent(data -> this.sync(player, data, inventory));
     }
 
     public void update(Player player, GridInventory inventory) {
-        RPGData.inventory(player).ifPresent(data -> update.accept(player, data, inventory));
+        RPGData.inventory(player).ifPresent(data -> this.update(player, data, inventory));
     }
 
     public ButtonAction action() {
@@ -79,7 +62,7 @@ public class SelectableMenu extends AbstractRegistryItem<RPGRegistryItem> {
     }
 
     public void setPage(Player player, InventoryData data, GridInventory inventory, int page) {
-        int max = this.maxPage.apply(player);
+        int max = this.maxPage(player);
         RPGData.runtime(player).ifPresent(runtime -> {
             int target = page;
             if (target >= max) {
@@ -92,5 +75,6 @@ public class SelectableMenu extends AbstractRegistryItem<RPGRegistryItem> {
         });
         InventoryHelper.updateAll(player);
     }
+
 
 }

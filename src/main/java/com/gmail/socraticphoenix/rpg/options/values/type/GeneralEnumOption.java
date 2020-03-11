@@ -6,7 +6,7 @@ import com.gmail.socraticphoenix.rpg.data.character.RuntimeData;
 import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
 import com.gmail.socraticphoenix.rpg.inventory.button.RuntimeButtonAction;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.ButtonData;
-import com.gmail.socraticphoenix.rpg.inventory.player.menus.OptionMenu;
+import com.gmail.socraticphoenix.rpg.inventory.menus.OptionMenu;
 import com.gmail.socraticphoenix.rpg.options.values.Option;
 import com.gmail.socraticphoenix.rpg.options.values.SetOption;
 import com.gmail.socraticphoenix.rpg.options.values.set.BasicSetOption;

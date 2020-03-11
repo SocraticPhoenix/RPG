@@ -19,7 +19,7 @@ public class RPGRegistryItemBuilder<T extends RPGRegistryItem> extends AbstractD
 
     @Override
     protected Optional<T> buildContent(DataView container) throws InvalidDataException {
-        if (!container.contains(RPGData.ID, RPGData.OWNER, RPGData.TYPE)) {
+        if (!container.contains(RPGData.ID, RPGData.OWNER)) {
             return Optional.empty();
         }
 

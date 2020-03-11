@@ -20,8 +20,7 @@ public class ButtonListener {
     public void onSwapHand(ChangeInventoryEvent.SwapHand ev, @First Player player) {
         player.getItemInHand(HandTypes.OFF_HAND).ifPresent(stack -> {
             stack.get(ButtonData.class).ifPresent(data -> {
-                ev.setCancelled(true);
-                data.action().get().getHandler().accept(player, ev);
+                ev.setCancelled(data.action().get().getHandler().test(player, ev));
             });
         });
 
@@ -36,8 +35,7 @@ public class ButtonListener {
     public void onChangeHeld(ChangeInventoryEvent.Held ev, @First Player player) {
         ev.getFinalSlot().peek().ifPresent(stack -> {
             stack.get(ButtonData.class).ifPresent(data -> {
-                ev.setCancelled(true);
-                data.action().get().getHandler().accept(player, ev);
+                ev.setCancelled(data.action().get().getHandler().test(player, ev));
             });
         });
     }
@@ -47,25 +45,17 @@ public class ButtonListener {
     public void onClick(ClickInventoryEvent ev, @First Player player) {
         ItemStackSnapshot stack = ev.getCursorTransaction().getFinal();
         stack.get(ImmutableButtonData.class).ifPresent(data -> {
-            ev.setCancelled(true);
-            ev.getCursorTransaction().setValid(false);
-            Sponge.getScheduler().createTaskBuilder().delayTicks(1)
-                    .execute(() -> {
-                        data.action().get().getHandler().accept(player, ev);
-                    })
-                    .submit(RPGPlugin.getPlugin());
+            boolean result = data.action().get().getHandler().test(player, ev);
+            ev.setCancelled(result);
+            ev.getCursorTransaction().setValid(!result);
         });
 
         ev.getTransactions().forEach(slotTransaction -> {
             ItemStackSnapshot slotStack = slotTransaction.getFinal();
             slotStack.get(ImmutableButtonData.class).ifPresent(data -> {
-                ev.setCancelled(true);
-                ev.getCursorTransaction().setValid(false);
-                Sponge.getScheduler().createTaskBuilder().delayTicks(1)
-                        .execute(() -> {
-                            data.action().get().getHandler().accept(player, ev);
-                        })
-                        .submit(RPGPlugin.getPlugin());
+                boolean result = data.action().get().getHandler().test(player, ev);
+                ev.setCancelled(result);
+                ev.getCursorTransaction().setValid(!result);
             });
         });
     }

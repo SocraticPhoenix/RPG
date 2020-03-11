@@ -3,15 +3,19 @@ package com.gmail.socraticphoenix.rpg.translation;
 import com.gmail.socraticphoenix.parse.Strings;
 import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.options.Options;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class TranslationManager {
     private Map<Locale, TranslationMap> languages = new LinkedHashMap<>();
@@ -39,7 +43,14 @@ public class TranslationManager {
 
     public void load(Path directory) throws IOException {
         try {
-            Files.list(directory).forEach(p -> {
+            Path mappings = directory.resolve("langs");
+            Path zip = directory.resolve("translations.zip");
+            Files.createDirectories(mappings);
+
+            RPGPlugin.getPlugin().getContainer().getAsset("translations.zip").get().copyToFile(zip, true);
+            unzip(zip, mappings);
+
+            Files.list(mappings).forEach(p -> {
                 Map<String, String> translations = new HashMap<>();
                 try {
                     Files.walk(p).forEach(file -> {
@@ -70,6 +81,36 @@ public class TranslationManager {
                 throw e;
             }
         }
+    }
+
+    private static void unzip(Path zip, Path dest) throws IOException {
+        byte[] buffer = new byte[1024];
+        ZipInputStream stream = new ZipInputStream(new FileInputStream(zip.toFile()));
+
+        ZipEntry ze = stream.getNextEntry();
+        while (ze != null) {
+            Path entry = dest.resolve(ze.getName());
+
+            if (ze.isDirectory()) {
+                if (!Files.exists(entry)) {
+                    Files.createDirectories(entry);
+                }
+            } else {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                int len;
+                while ((len = stream.read(buffer)) > 0) {
+                    out.write(buffer, 0, len);
+                }
+                out.close();
+
+                Files.write(entry, out.toByteArray(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            }
+
+            stream.closeEntry();
+            ze = stream.getNextEntry();
+        }
+        stream.closeEntry();
+        stream.close();
     }
 
 }

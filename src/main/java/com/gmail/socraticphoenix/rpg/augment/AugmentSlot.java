@@ -8,6 +8,7 @@ import org.spongepowered.api.data.DataSerializable;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.persistence.DataBuilder;
 import org.spongepowered.api.data.persistence.InvalidDataException;
+import org.spongepowered.api.item.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +16,13 @@ import java.util.stream.Collectors;
 
 public class AugmentSlot implements DataSerializable {
     private AugmentColor color;
+    private ItemStack gem;
     private List<SetModifier> augments;
 
-    public AugmentSlot(AugmentColor color, List<SetModifier> augments) {
+    public AugmentSlot(AugmentColor color, ItemStack gem, List<SetModifier> augments) {
         this.color = color;
         this.augments = augments;
+        this.gem = gem;
     }
 
     public void setColor(AugmentColor color) {
@@ -38,8 +41,16 @@ public class AugmentSlot implements DataSerializable {
         return augments;
     }
 
+    public ItemStack getGem() {
+        return gem;
+    }
+
+    public void setGem(ItemStack gem) {
+        this.gem = gem;
+    }
+
     public AugmentSlot copy() {
-        return new AugmentSlot(this.color, this.augments.stream().map(SetModifier::copy).collect(Collectors.toList()));
+        return new AugmentSlot(this.color, this.gem.copy(), this.augments.stream().map(SetModifier::copy).collect(Collectors.toList()));
     }
 
     @Override
@@ -51,6 +62,7 @@ public class AugmentSlot implements DataSerializable {
     public DataContainer toContainer() {
         return DataContainer.createNew()
                 .set(RPGData.AUGMENT_COLOR, this.color.toString())
+                .set(RPGData.AUGMENT_GEM, this.gem)
                 .set(RPGData.AUGMENTS, this.augments);
     }
 
@@ -58,11 +70,12 @@ public class AugmentSlot implements DataSerializable {
 
         @Override
         public Optional<AugmentSlot> build(DataView container) throws InvalidDataException {
-            if (!container.contains(RPGData.AUGMENT_COLOR, RPGData.AUGMENTS)) {
+            if (!container.contains(RPGData.AUGMENT_COLOR, RPGData.AUGMENT_GEM, RPGData.AUGMENTS)) {
                 return Optional.empty();
             }
 
             return Optional.of(new AugmentSlot(AugmentColor.valueOf(container.getString(RPGData.AUGMENT_COLOR).get()),
+                    container.getSerializable(RPGData.AUGMENT_GEM, ItemStack.class).get(),
                     container.getSerializableList(RPGData.AUGMENTS, SetModifier.class).get()));
         }
 
