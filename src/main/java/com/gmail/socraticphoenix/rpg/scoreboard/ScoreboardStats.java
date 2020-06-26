@@ -23,6 +23,8 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.util.Direction;
+import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.World;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -93,7 +95,6 @@ public class ScoreboardStats implements Runnable {
                     objective.getOrCreateScore(text)
                             .setScore(15 - i);
                 }
-
                 if (p.getScoreboard().getObjectives().stream().anyMatch(o -> o.getName().startsWith("RPG_S"))) {
                     p.getScoreboard().getObjectives().forEach(p.getScoreboard()::removeObjective);
                     p.getScoreboard().addObjective(objective);

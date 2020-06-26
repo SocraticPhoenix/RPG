@@ -1,0 +1,13 @@
+rpg.augment.item=${0} Augment:
+rpg.augment.slot.filled=${0} Augment Slot:
+rpg.augment.slot.empty=${0} Augment Slot - Empty
+
+rpg.augment.red=Red
+rpg.augment.blue=Blue
+rpg.augment.yellow=Yellow
+rpg.augment.green=Green
+rpg.augment.colorless=Colorless
+rpg.augment.none=None
+
+rpg.menu.augments=Augmentation
+rpg.menu.augments.select=Edit Spell Slot Augments

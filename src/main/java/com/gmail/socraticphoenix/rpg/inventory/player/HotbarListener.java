@@ -7,23 +7,15 @@ import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
 import com.gmail.socraticphoenix.rpg.inventory.storage.ItemStorage;
 import com.gmail.socraticphoenix.rpg.options.Options;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.entity.EntityTypes;
-import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
 import org.spongepowered.api.event.item.inventory.ClickInventoryEvent;
-import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.entity.Hotbar;
-import org.spongepowered.api.item.inventory.entity.MainPlayerInventory;
 import org.spongepowered.api.item.inventory.property.SlotIndex;
 import org.spongepowered.api.item.inventory.query.QueryOperationTypes;
-import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 
 import java.util.Optional;
 
@@ -66,7 +58,7 @@ public class HotbarListener {
 
             RPGData.inventory(player).ifPresent(data -> {
                 ItemStorage.Flat hotbarStorage = data.getHotbar().flatView();
-                int size = hotbarStorage.size();
+                int size = hotbarStorage.capacity();
 
                 if (userNumberSelection && index != SELECTED_SLOT + 1 && index != SELECTED_SLOT - 1 && index != SELECTED_SLOT) {
                     int newSlot;
@@ -78,7 +70,7 @@ public class HotbarListener {
 
                     if (newSlot >= 0 && newSlot < size) {
                         data.setSelectedSlot(newSlot);
-                        InventoryHelper.syncHotbarDataAndHotbar(player);
+                        InventoryHelper.updateHotbar(player);
                     }
                 } else {
                     int move = index - startIndex;
@@ -92,7 +84,7 @@ public class HotbarListener {
 
                     if (newSlot >= 0 && newSlot < size) {
                         data.setSelectedSlot(newSlot);
-                        InventoryHelper.syncHotbarDataAndHotbar(player);
+                        InventoryHelper.updateHotbar(player);
                     }
                 }
 

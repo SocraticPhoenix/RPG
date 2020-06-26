@@ -43,14 +43,14 @@ public class SpellBookMenu extends SelectableMenu {
             for (int x = InventoryHelper.PAGE_START.getX(); x < InventoryHelper.PAGE_LIMIT.getX(); x++) {
                 if (startIndex < spells.size()) {
                     Spell spell = spells.get(startIndex);
-                    inventory.set(x, y, ItemStack.builder()
+                    InventoryHelper.set(x, y, inventory, ItemStack.builder()
                             .itemType(spell.icon())
                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.GOLD, Messages.translate(player, spell.rawId())))
                             .add(Keys.ITEM_LORE, Spells.spellbookLore(player, spell))
                             .itemData(InventoryHelper.createNoopButton())
                             .build());
                 } else {
-                    inventory.set(x, y, InventoryHelper.createBorderItem());
+                    InventoryHelper.set(x, y, inventory, InventoryHelper.createBorderItem());
                 }
                 startIndex++;
             }

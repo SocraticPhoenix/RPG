@@ -1,0 +1,2 @@
+rpg.value.true=True
+rpg.value.false=False

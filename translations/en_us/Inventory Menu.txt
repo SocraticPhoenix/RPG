@@ -1,0 +1,3 @@
+rpg.menu=Menu
+rpg.menu.other_menus=Menu
+rpg.menu.finish=Finish

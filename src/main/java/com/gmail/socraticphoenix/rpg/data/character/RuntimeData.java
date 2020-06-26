@@ -24,20 +24,13 @@ public class RuntimeData {
 
     private SetOption optionModifying;
 
-    private List<SpellSlot> spellSlots = new ArrayList<>();
+    private List<SpellSlot> spellSlots;
     private boolean omniwand;
     private SpellSlot spellSlotModifying;
 
     private ItemData augmentModifying;
-    private List<SpellSlot> augmentSpellSlots = new ArrayList<>();
+    private List<SpellSlot> augmentSpellSlots;
     private SpellSlot augmentSpellSlotModifying;
-
-    public RuntimeData(SelectableMenu menu, int page) {
-        this.menu = menu;
-        this.page = page;
-        this.modifiers = new SortedList<>();
-        this.party = new ArrayList<>();
-    }
 
     public RuntimeData(SelectableMenu menu, int page, SetOption optionModifying, List<SetModifier> modifiers, List<SpellSlot> spellSlots, boolean omniwand, SpellSlot spellSlotModifying, List<SpellSlot> augmentSpellSlots, SpellSlot augmentSpellSlotModifying, ItemData augmentModifying, List<Player> party) {
         this.menu = menu;
@@ -54,13 +47,13 @@ public class RuntimeData {
     }
 
     public RuntimeData() {
-        this(SelectableMenus.BANK_INVENTORY, 0);
+        this(SelectableMenus.BANK_INVENTORY, 0, null, new SortedList<>(), new ArrayList<>(), false, null, new ArrayList<>(), null, null, new ArrayList<>());
     }
 
     public RuntimeData copy() {
         return new RuntimeData(menu, page, optionModifying == null ? null : optionModifying.copy(), new SortedList<>(this.modifiers.stream().map(SetModifier::copy).collect(Collectors.toList())),
                 this.spellSlots.stream().map(SpellSlot::copy).collect(Collectors.toList()), omniwand, spellSlotModifying == null ? null : spellSlotModifying.copy(),
-                this.augmentSpellSlots.stream().map(SpellSlot::copy).collect(Collectors.toList()), augmentSpellSlotModifying == null ? null : augmentSpellSlotModifying.copy(), this.augmentModifying.copy(), Items.looseClone(this.party));
+                this.augmentSpellSlots.stream().map(SpellSlot::copy).collect(Collectors.toList()), augmentSpellSlotModifying == null ? null : augmentSpellSlotModifying.copy(), this.augmentModifying == null ? null : this.augmentModifying.copy(), Items.looseClone(this.party));
     }
 
     public List<SpellSlot> getAugmentSpellSlots() {

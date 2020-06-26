@@ -1,0 +1,8 @@
+rpg.menu.equipment=Equipment
+rpg.menu.equipment.helmet=Helmet Slot
+rpg.menu.equipment.chestplate=Chestplate Slot
+rpg.menu.equipment.leggings=Leggings Slot
+rpg.menu.equipment.boots=Boots Slot
+rpg.menu.equipment.trinket=Trinket Slot
+rpg.menu.equipment.ammo=Ammo Slot
+rpg.menu.equipment.consumable=Consumable Slot

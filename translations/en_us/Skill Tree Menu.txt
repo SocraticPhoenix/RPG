@@ -1,0 +1,1 @@
+rpg.menu.skill=Skill Tree

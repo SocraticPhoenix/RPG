@@ -1,0 +1,31 @@
+rpg.spells.types=Spell Types
+
+rpg.spells.msg.cooldown=${0}s cooldown remaining!
+rpg.spells.msg.mana=Not enough mana!
+rpg.spells.msg.passive_spell=Spell cannot be activated!
+rpg.spells.msg.not_in_book=Spell not in spell book!
+rpg.spells.msg.health=Not enough health!
+rpg.spells.msg.charges=No charges remaining!
+rpg.spells.msg.cast=Cast successful!
+rpg.spells.msg.cast_charges=Cast successful! (${0}/${1} charges remaining)
+
+rpg.spells.noop=None
+rpg.spells.noop.desc=This spell does nothing! Good thing you learned it earlier...
+
+rpg.spells.default=Disciple
+rpg.spells.default.desc=You are a disciple of the gods, granting +4 speed and +1 jump.
+
+rpg.spells.blast=Blast
+rpg.spells.blast.desc=Creates an explosion in the direction you're looking. Deals 4 + (2d6 * level) damage. Maximum range is 10 blocks.
+
+rpg.spells.slash=Slash
+rpg.spells.slash.desc=Deals 2 + (1d6 * level) damage in a small area in front of you.
+
+rpg.spells.light_slash=Light Slash
+rpg.spells.light_slash.desc=Deals 4 + 1d6 damage in a small area in front of you.
+
+rpg.spells.arrow=Arrow
+rpg.spells.arrow.desc=Shoots an arrow which deals 2 + 2d6 damage.
+
+rpg.spells.dimension_arrow=Dimension Arrow
+rpg.spells.dimension_arrow=Shoots an arrow that teleports you to where it lands.

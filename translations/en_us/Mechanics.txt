@@ -1,0 +1,14 @@
+rpg.health=Health
+rpg.mana=Mana
+rpg.left=Left
+rpg.right=Right
+rpg.left.short=L
+rpg.right.short=R
+rpg.wand.omniwand=Omniwand
+rpg.cd.h-m-s=${0} ${1} ${2}
+rpg.cd.m-s=${0} ${1}
+rpg.cd.s=${0}
+rpg.cd.hour=${0}h
+rpg.cd.minute=${0}m
+rpg.cd.second=${0}s
+rpg.min_level=Minimum required level: ${0}

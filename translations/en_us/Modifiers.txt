@@ -1,0 +1,4 @@
+rpg.mods.percent_damage=+${0}% damage for ${1} spells
+rpg.mods.flat_damage=+${0} damage for ${1} spells
+rpg.mods.flat_speed=+${0} speed.
+rpg.mods.flat_jump=+${0} jump.

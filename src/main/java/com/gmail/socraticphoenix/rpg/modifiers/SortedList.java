@@ -27,12 +27,12 @@ public class SortedList<T extends Comparable<T>> extends ArrayList<T> {
     public boolean add(T o) {
         if (this.isEmpty()) {
             return super.add(o);
-        } if (this.get(this.size() - 1).compareTo(o) <= 0) {
+        } else if (this.get(this.size() - 1).compareTo(o) <= 0) {
             return super.add(o);
         } else if (this.get(0).compareTo(o) >= 0) {
             super.add(0, o);
         } else {
-            binaryInsert(o, 0, size());
+            binaryInsert(o, 0, size() - 1);
         }
 
         return true;
@@ -43,15 +43,17 @@ public class SortedList<T extends Comparable<T>> extends ArrayList<T> {
 
         while (low <= high) {
             int mid = (low + high) / 2;
-            index = mid;
             T midVal = this.get(mid);
             int cmp = midVal.compareTo(o);
 
             if (cmp < 0) {
                 low = mid + 1;
+                index = low;
             } else if (cmp > 0) {
                 high = mid - 1;
+                index = high;
             } else if (cmp == 0) {
+                index = mid;
                 break;
             }
         }

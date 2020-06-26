@@ -1,0 +1,3 @@
+rpg.options=Options
+rpg.options.use_number_selection=Use Number Selection
+rpg.options.language=Language

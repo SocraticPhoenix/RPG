@@ -1,0 +1,7 @@
+rpg.menu.wand=Wands
+rpg.menu.wand.slots=Spell Slots
+rpg.menu.wand.slots.add=Add Slot
+rpg.menu.wand.slots.remove=Remove Slot
+rpg.menu.wand.select=Select New Spell
+rpg.menu.wand.bypass=You may cast spells from this slot without knowing them.
+rpg.menu.wand.locked=Only ${0} spells may be bound to this spell slot.

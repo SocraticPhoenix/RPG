@@ -23,8 +23,8 @@ import com.gmail.socraticphoenix.rpg.registry.RPGRegisterEvent;
 import com.gmail.socraticphoenix.rpg.spell.spells.*;
 import com.gmail.socraticphoenix.rpg.stats.StatHelper;
 import com.gmail.socraticphoenix.rpg.translation.Messages;
-import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.data.property.block.PassableProperty;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.property.entity.EyeLocationProperty;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.Living;
@@ -385,20 +385,37 @@ public class Spells {
         });
     }
 
-    public static final Predicate<BlockRayHit<World>> HIT_FILTER = b -> {
-        BlockState block = b.getExtent().getBlock(b.getBlockPosition());
+    private static final BlockType[] passable = new BlockType[]
+            {BlockTypes.AIR, BlockTypes.WATER, BlockTypes.FLOWING_WATER,
+            BlockTypes.LAVA, BlockTypes.FLOWING_LAVA,
+            BlockTypes.GRASS, BlockTypes.TALLGRASS,
+            BlockTypes.RED_FLOWER, BlockTypes.YELLOW_FLOWER,
+            BlockTypes.WHEAT, BlockTypes.CARROTS, BlockTypes.BEETROOTS, BlockTypes.NETHER_WART,
+            BlockTypes.STONE_BUTTON, BlockTypes.WOODEN_BUTTON, BlockTypes.STONE_PRESSURE_PLATE,
+            BlockTypes.WOODEN_PRESSURE_PLATE, BlockTypes.HEAVY_WEIGHTED_PRESSURE_PLATE, BlockTypes.LIGHT_WEIGHTED_PRESSURE_PLATE,
+            BlockTypes.DEADBUSH, BlockTypes.RAIL, BlockTypes.ACTIVATOR_RAIL, BlockTypes.DETECTOR_RAIL, BlockTypes.GOLDEN_RAIL,
+            BlockTypes.WEB, BlockTypes.CARPET, BlockTypes.VINE, BlockTypes.TRIPWIRE, BlockTypes.STANDING_SIGN,
+            BlockTypes.WALL_SIGN, BlockTypes.PORTAL, BlockTypes.END_PORTAL,
+            BlockTypes.DOUBLE_PLANT, BlockTypes.SAPLING,
+            BlockTypes.BROWN_MUSHROOM, BlockTypes.RED_MUSHROOM};
 
-        Optional<PassableProperty> property = block.getProperty(PassableProperty.class);
-        if (property.isPresent()) {
-            return property.get().getValue();
-        } else {
-            return false;
+    public static final Predicate<BlockRayHit<World>> SKIP_FILTER = b -> {
+        BlockType type = b.getExtent().getBlockType(b.getBlockPosition());
+
+        for (BlockType blockType : passable) {
+            if (type == blockType) {
+                return true;
+            }
         }
+
+        return false;
     };
+
+    public static final Predicate<BlockRayHit<World>> STOP_FILTER = SKIP_FILTER.negate();
 
     public static Vector3d getIntersection(World world, Vector3d start, Vector3d direction, Predicate<Entity> friends, double range) {
         Vector3d target = BlockRay.from(world, start).direction(direction).distanceLimit(range)
-                .skipFilter(HIT_FILTER).end().map(BlockRayHit::getPosition).orElse(start.add(direction.normalize().mul(range)));
+                .skipFilter(SKIP_FILTER).stopFilter(STOP_FILTER).end().map(BlockRayHit::getPosition).orElse(start.add(direction.normalize().mul(range)));
 
         Set<EntityUniverse.EntityHit> entities = world.getIntersectingEntities(start, target, e -> e.getEntity() instanceof Living && !friends.test(e.getEntity()));
         if (entities.isEmpty()) {
@@ -417,15 +434,15 @@ public class Spells {
         }
     }
 
-    public static Vector3d getIntersection(Living caster, Predicate<Entity> friends, double range) {
+    public static Vector3d getIntersection(Living caster, Predicate<Entity> filter, double range) {
         World world = caster.getWorld();
 
         Vector3d start = getStartLocation(caster);
 
         Vector3d target = BlockRay.from(caster).distanceLimit(range)
-                .skipFilter(HIT_FILTER).end().map(BlockRayHit::getPosition).orElse(start.add(Spells.looking(caster).normalize().mul(range)));
+                .skipFilter(SKIP_FILTER).stopFilter(STOP_FILTER).end().map(BlockRayHit::getPosition).orElse(start.add(Spells.looking(caster).normalize().mul(range)));
 
-        Set<EntityUniverse.EntityHit> entities = world.getIntersectingEntities(start, target, e -> e.getEntity() instanceof Living && !friends.test(e.getEntity()));
+        Set<EntityUniverse.EntityHit> entities = world.getIntersectingEntities(start, target, e -> e.getEntity() instanceof Living && filter.test(e.getEntity()));
         if (entities.isEmpty()) {
             return target;
         } else {
@@ -448,7 +465,7 @@ public class Spells {
         Vector3d start = getStartLocation(caster);
 
         Vector3d target = BlockRay.from(caster).distanceLimit(range)
-                .skipFilter(HIT_FILTER).end().map(BlockRayHit::getPosition).orElse(start.add(Spells.looking(caster).normalize().mul(range)));
+                .skipFilter(SKIP_FILTER).stopFilter(STOP_FILTER).end().map(BlockRayHit::getPosition).orElse(start.add(Spells.looking(caster).normalize().mul(range)));
 
         Set<EntityUniverse.EntityHit> entities = world.getIntersectingEntities(start, target, e -> e.getEntity() instanceof Living && !friends.test(e.getEntity()));
         if (entities.isEmpty()) {
@@ -506,8 +523,9 @@ public class Spells {
     }
 
     public static boolean hasLos(Vector3d center, Entity entity) {
-        return BlockRay.from(entity.getWorld(), center).to(entity.getLocation().getPosition()).skipFilter(HIT_FILTER).end()
-            .map(HIT_FILTER::test).orElse(true);
+        return true;
+
+
     }
 
     public static Predicate<Entity> enemies(Entity caster) {

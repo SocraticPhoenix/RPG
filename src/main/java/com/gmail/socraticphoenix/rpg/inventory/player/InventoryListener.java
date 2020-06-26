@@ -1,8 +1,10 @@
 package com.gmail.socraticphoenix.rpg.inventory.player;
 
+import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.item.ItemData;
 import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemData;
 import com.gmail.socraticphoenix.rpg.inventory.InventoryHelper;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.Item;
@@ -79,6 +81,7 @@ public class InventoryListener {
                         location.spawnEntity(newItem);
                     });
                     InventoryHelper.syncAll(player);
+                    Sponge.getScheduler().createTaskBuilder().delayTicks(1).execute(() -> InventoryHelper.updateAll(player)).submit(RPGPlugin.getPlugin());
                 }
             }
         });

@@ -149,7 +149,7 @@ public interface ItemStorage extends DataSerializable {
             return storage.itemCount();
         }
 
-        public int size() {
+        public int capacity() {
             return size;
         }
 

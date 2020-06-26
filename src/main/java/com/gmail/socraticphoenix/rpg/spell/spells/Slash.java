@@ -37,9 +37,9 @@ public class Slash extends AbstractSpell {
 
     @Override
     public void activate(Living caster, List<SetModifier> modifiers) {
-        Vector3d start = Spells.getIntersection(caster, Spells.friends(caster), 2);
+        Vector3d start = Spells.getIntersection(caster, Spells.enemies(caster), 2);
 
-        Spells.getIntersectingRectangle(caster, caster.getLocation().getPosition(), Spells.area(start, 1), Spells.enemies( caster)).forEach(e -> {
+        Spells.getIntersectingRectangle(caster, caster.getLocation().getPosition(), Spells.area(start, 1), Spells.enemies(caster)).forEach(e -> {
             Spells.damage(caster, e, modifiers, this.damage.apply(caster), this);
             Spells.flatKnockback(caster, e, modifiers, .5, start, this);
         });

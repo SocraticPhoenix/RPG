@@ -1,0 +1,5 @@
+rpg.menu.spellbook=Spellbook
+rpg.menu.spellbook.mana=Mana Cost
+rpg.menu.spellbook.cd=Cooldown
+rpg.menu.spellbook.health=Health Cost
+rpg.menu.spellbook.charges=Charges per Rest

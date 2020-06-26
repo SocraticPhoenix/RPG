@@ -1,0 +1,4 @@
+rpg.quest.tutorial
+rpg.quest.tutorial.speak=Speak to the old wizard.
+rpg.quest.tutorial.kill_queen=Kill the spider queen.
+rpg.quest.tutorial.clear_spiders=Clear out the spiders.

@@ -1,0 +1,5 @@
+rpg.bank=Inventory
+rpg.bank.page=Page
+rpg.bank.next_page=Next Page
+rpg.bank.previous_page=Previous Page
+rpg.bank.to_page_one=To Page One

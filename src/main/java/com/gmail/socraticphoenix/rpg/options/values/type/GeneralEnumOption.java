@@ -78,7 +78,7 @@ public class GeneralEnumOption extends AbstractRegistryItem<RPGRegistryItem> imp
             for (int x = InventoryHelper.PAGE_START.getX(); x < InventoryHelper.PAGE_LIMIT.getX(); x++) {
                 if (listIndex < values.size()) {
                     String value = values.get(listIndex);
-                    inventory.set(x, y, ItemStack.builder()
+                    InventoryHelper.set(x, y, inventory, ItemStack.builder()
                             .quantity(1)
                             .itemType(ItemTypes.BOOK)
                             .add(Keys.DISPLAY_NAME, this.nameFor(player, value))
@@ -88,7 +88,7 @@ public class GeneralEnumOption extends AbstractRegistryItem<RPGRegistryItem> imp
                             })))
                             .build());
                 } else {
-                    inventory.set(x, y, InventoryHelper.createBorderItem());
+                    InventoryHelper.set(x, y, inventory, InventoryHelper.createBorderItem());
                 }
                 listIndex++;
             }

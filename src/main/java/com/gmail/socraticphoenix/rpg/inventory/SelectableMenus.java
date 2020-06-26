@@ -125,7 +125,7 @@ public class SelectableMenus {
             player -> (RPGPlugin.getPlugin().getRegistry().registryFor(SimpleSelectableMenu.class).get().elements().size() - 6) / 27,
             player -> ItemStack.builder().itemType(ItemTypes.WRITABLE_BOOK).add(Keys.DISPLAY_NAME, Text.of(TextColors.YELLOW, Messages.translate(player, "rpg.menu.other_menus"))).build(),
             (player, data, inventory) -> {
-                Iterator<SimpleSelectableMenu> iterator = RPGPlugin.getPlugin().getRegistry().registryFor(SimpleSelectableMenu.class).get().elements().iterator();
+                Iterator<SelectableMenu> iterator = RPGPlugin.getPlugin().getRegistry().registryFor(SelectableMenu.class).get().elements().iterator();
                 int index = 1;
                 while (index < 7 && iterator.hasNext()) {
                     iterator.next();
@@ -134,10 +134,10 @@ public class SelectableMenus {
 
                 index = 27;
                 while (iterator.hasNext()) {
-                    SimpleSelectableMenu menu = iterator.next();
+                    SelectableMenu menu = iterator.next();
                     ItemStack button = menu.button(player);
                     button.offer(ButtonData.of(menu.action()));
-                    inventory.set(SlotIndex.of(index), button);
+                    InventoryHelper.set(index, inventory, button);
                     index++;
                 }
 

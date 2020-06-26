@@ -4,13 +4,10 @@ import com.flowpowered.math.vector.Vector2i;
 import com.gmail.socraticphoenix.collect.Items;
 import com.gmail.socraticphoenix.rpg.RPGPlugin;
 import com.gmail.socraticphoenix.rpg.data.RPGData;
-import com.gmail.socraticphoenix.rpg.data.sponge.item.CustomItemData;
 import com.gmail.socraticphoenix.rpg.inventory.button.ButtonAction;
-import com.gmail.socraticphoenix.rpg.inventory.button.RuntimeButtonAction;
 import com.gmail.socraticphoenix.rpg.inventory.button.data.ButtonData;
 import com.gmail.socraticphoenix.rpg.inventory.storage.ItemStorage;
 import com.gmail.socraticphoenix.rpg.registry.registries.ButtonActionRegistry;
-import com.gmail.socraticphoenix.rpg.stats.StatHelper;
 import com.gmail.socraticphoenix.rpg.translation.Messages;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
@@ -63,6 +60,22 @@ public interface InventoryHelper {
         return pos.getX() + pos.getY() * width;
     }
 
+    static void set(int x, int y, GridInventory inv, ItemStack stack) {
+        if (stack.getType() == ItemTypes.AIR || stack.getType() == ItemTypes.NONE || stack.isEmpty()) {
+            inv.set(x, y, ItemStack.empty());
+        } else {
+            inv.set(x, y, stack);
+        }
+    }
+
+    static void set(Vector2i pos, GridInventory inv, ItemStack stack) {
+        set(pos.getX(), pos.getY(), inv, stack);
+    }
+
+    static void set(int index, GridInventory inv, ItemStack stack) {
+        set(fromIndex(index, inv.getColumns()), inv, stack);
+    }
+
     static void openInventory(Player player) {
         RPGData.inventory(player).ifPresent(data -> {
             player.closeInventory();
@@ -79,7 +92,6 @@ public interface InventoryHelper {
                                 event.getCause().first(Player.class).ifPresent(p -> {
                                     InventoryHelper.syncAll(p);
                                     InventoryHelper.updateAll(p);
-                                    InventoryHelper.syncHotbarDataAndHotbar(p);
                                 });
                             }
                         })
@@ -87,7 +99,6 @@ public interface InventoryHelper {
 
                 player.openInventory(inventory);
                 InventoryHelper.updateAll(player);
-                InventoryHelper.syncHotbarDataAndHotbar(player);
             }).delayTicks(3).submit(RPGPlugin.getPlugin());
         });
     }
@@ -121,7 +132,7 @@ public interface InventoryHelper {
         });
     }
 
-    static void updateAll(Player player) {
+    static void updateAllNoDelay(Player player) {
         searchForMain(player).ifPresent(gridInventory -> {
             InventoryHelper.setupButtons(player, gridInventory);
             InventoryHelper.updateHotbar(player, gridInventory);
@@ -132,7 +143,14 @@ public interface InventoryHelper {
             InventoryHelper.updateCarried(player, gridInventory);
         });
 
-        InventoryHelper.syncHotbarDataAndHotbar(player);
+        InventoryHelper.updateHotbar(player);
+    }
+
+    static void updateAll(Player player) {
+        updateAllNoDelay(player);
+        Sponge.getScheduler().createTaskBuilder().delayTicks(1).execute(() -> {
+            updateAllNoDelay(player);
+        }).submit(RPGPlugin.getPlugin());
     }
 
     static void syncAll(Player player) {
@@ -201,7 +219,7 @@ public interface InventoryHelper {
         return builder.build();
     }
 
-    static void syncHotbarDataAndHotbar(Player player) {
+    static void updateHotbar(Player player) {
         RPGData.inventory(player).ifPresent(hotbarData -> {
             Hotbar hotbar = player.getInventory().query(QueryOperationTypes.INVENTORY_TYPE.of(Hotbar.class));
             int newSlot = hotbarData.getSelectedSlot();
@@ -210,7 +228,7 @@ public interface InventoryHelper {
 
             for (int i = newSlot - 3, j = 2; i <= newSlot + 3; i++, j++) {
                 SlotIndex targetIndex = SlotIndex.of(j);
-                if (i >= 0 && i < stacks.size() && stacks.get(i).isPresent()) {
+                if (i >= 0 && i < stacks.capacity() && stacks.get(i).isPresent()) {
                     ItemStack stack = stacks.get(i).get();
                     hotbar.set(targetIndex, stack);
                 } else {
@@ -334,7 +352,7 @@ public interface InventoryHelper {
 
             for (int i = 0; i < 9 && i < buttons.size(); i++) {
                 ItemStack stack = buttons.get(i);
-                inventory.set(i + BUTTON_ROW_START.getX(), BUTTON_ROW_START.getY(), stack);
+                set(i + BUTTON_ROW_START.getX(), BUTTON_ROW_START.getY(), inventory, stack);
             }
 
         }));
@@ -352,7 +370,7 @@ public interface InventoryHelper {
     static void drawFilledRect(GridInventory inventory, Vector2i a, Vector2i b, ItemStackSnapshot item) {
         for (int x = a.getX(); x < b.getX(); x++) {
             for (int y = a.getY(); y < b.getY(); y++) {
-                inventory.set(SlotPos.of(x, y), item.createStack());
+                InventoryHelper.set(x, y, inventory, item.createStack());
             }
         }
     }
@@ -368,7 +386,7 @@ public interface InventoryHelper {
 
     static ItemStorage decreaseAllByOne(ItemStorage storage) {
         ItemStorage.Flat flat = storage.flatView();
-        for (int i = 0; i < flat.size(); i++) {
+        for (int i = 0; i < flat.capacity(); i++) {
             Optional<ItemStack> stackOptional = flat.get(i);
             if (stackOptional.isPresent()) {
                 ItemStack stack = stackOptional.get().copy();
@@ -387,23 +405,5 @@ public interface InventoryHelper {
     static ButtonData createNoopButton() {
         return ButtonData.of(RPGPlugin.getPlugin().getRegistry().registryFor(ButtonAction.class).get().get(ButtonActionRegistry.NO_OP).get());
     }
-
-    static ButtonAction createCraftingAction(ItemStack stack, ItemStorage storage, Slot slot) {
-        return new RuntimeButtonAction(((player, targetInventoryEvent) -> {
-            RPGData.inventory(player).ifPresent(data -> {
-                searchForCarrier(player).ifPresent(inventory -> {
-                    if (inventory.canFit(stack)) {
-                        data.setCrafting(storage);
-                        InventoryHelper.updateAll(player);
-                        slot.clear();
-                        inventory.offer(stack);
-                        InventoryHelper.syncAll(player);
-                        InventoryHelper.updateAll(player);
-                    }
-                });
-            });
-        }));
-    }
-
 
 }

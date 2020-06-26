@@ -48,6 +48,11 @@ public class OptionMenu extends SelectableMenu {
     }
 
     @Override
+    public void close(Player player, InventoryData data, GridInventory inventory) {
+        finishModifying(player);
+    }
+
+    @Override
     public ItemStack button(Player player) {
         return ItemStack.builder().itemType(ItemTypes.STONE_PICKAXE).add(Keys.DISPLAY_NAME, Text.of(TextColors.GRAY, "Options")).build();
     }
@@ -75,7 +80,6 @@ public class OptionMenu extends SelectableMenu {
     @Override
     public void update(Player player, InventoryData data, GridInventory inventory) {
         RPGData.runtime(player).ifPresent(r -> {
-            UUID id = player.getUniqueId();
             if (r.getOptionModifying() == null || !r.getOptionModifying().type().hasSelectionGui()) {
                 InventoryHelper.drawFilledRect(inventory, InventoryHelper.PAGE_START, InventoryHelper.PAGE_LIMIT, InventoryHelper.createBorderItem().createSnapshot());
                 Queue<ItemStack> buttons = new ArrayDeque<>();
@@ -91,7 +95,7 @@ public class OptionMenu extends SelectableMenu {
 
                 for (int y = InventoryHelper.PAGE_START.getY(); y < InventoryHelper.PAGE_LIMIT.getY() && !buttons.isEmpty(); y++) {
                     for (int x = InventoryHelper.PAGE_START.getX(); x < InventoryHelper.PAGE_LIMIT.getX() && !buttons.isEmpty(); x++) {
-                        inventory.set(x, y, buttons.poll());
+                        InventoryHelper.set(x, y, inventory, buttons.poll());
                     }
                 }
             } else {

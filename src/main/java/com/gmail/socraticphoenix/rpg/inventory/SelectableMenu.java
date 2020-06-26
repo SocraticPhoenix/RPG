@@ -22,6 +22,14 @@ public abstract class SelectableMenu extends AbstractRegistryItem<SelectableMenu
 
     public abstract ItemStack button(Player player);
 
+    public void open(Player player, InventoryData data, GridInventory inventory) {
+
+    }
+
+    public void close(Player player, InventoryData data, GridInventory inventory) {
+
+    }
+
     public abstract void update(Player player, InventoryData data, GridInventory inventory);
 
     public abstract void sync(Player player, InventoryData data, GridInventory inventory);
@@ -46,17 +54,17 @@ public abstract class SelectableMenu extends AbstractRegistryItem<SelectableMenu
         String id = pluginId + ":" + this.id + "_selection_button";
         return RPGPlugin.getPlugin().getRegistry().registryFor(ButtonAction.class).get().get(id).orElse(
                 new ButtonAction((player, targetInventoryEvent) -> {
-                    RPGData.runtime(player).ifPresent(data -> {
+                    RPGData.runtime(player).ifPresent(data -> RPGData.inventory(player).ifPresent(invData -> {
                         if (data.getMenu() != this) {
                             InventoryHelper.searchForMain(player).ifPresent(inventory -> {
-                                SelectableMenus.OPTIONS.finishModifying(player);
-
+                                data.getMenu().close(player, invData, inventory);
                                 data.setMenu(this);
                                 InventoryHelper.clear(inventory, InventoryHelper.PAGE_START, InventoryHelper.PAGE_LIMIT);
+                                data.getMenu().open(player, invData, inventory);
                                 InventoryHelper.updateAll(player);
                             });
                         }
-                    });
+                    }));
                 }, this.pluginId, this.id + "_selection_button")
         );
     }

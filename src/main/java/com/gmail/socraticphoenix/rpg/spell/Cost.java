@@ -26,7 +26,7 @@ public class Cost {
     }
 
     public static Cost of(double duration, int mana, int health, int charges) {
-        return new Cost(mana, health, (int) duration * 1000, charges);
+        return new Cost(mana, health, (int) (duration * 1000), charges);
     }
 
     public static Cost free() {

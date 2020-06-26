@@ -1,0 +1,40 @@
+rpg.scoreboard=Scoreboard
+rpg.scoreboard.clear=Clear
+rpg.scoreboard.coords=Position
+rpg.scoreboard.speed=Speed
+rpg.scoreboard.players=Players
+rpg.scoreboard.x=X
+rpg.scoreboard.y=Y
+rpg.scoreboard.z=Z
+rpg.scoreboard.pages=Bank Pages
+rpg.scoreboard.equipped=Equipped
+rpg.scoreboard.none=None
+rpg.scoreboard.compass=Compass
+rpg.scoreboard.first_name=First Name
+rpg.scoreboard.last_name=Last Name
+rpg.scoreboard.total_xp=Total XP
+rpg.scoreboard.level=Level
+
+Directions:
+rpg.scoreboard.compass.north=North
+rpg.scoreboard.compass.north_northeast=North Northeast
+rpg.scoreboard.compass.northeast=Northeast
+rpg.scoreboard.compass.east_northeast=East Northeast
+
+rpg.scoreboard.compass.east=East
+rpg.scoreboard.compass.east_southeast=East Southeast
+rpg.scoreboard.compass.southeast=Southeast
+rpg.scoreboard.compass.south_southeast=South Southeast
+
+rpg.scoreboard.compass.south=South
+rpg.scoreboard.compass.south_southwest=South Southwest
+rpg.scoreboard.compass.southwest=Southwest
+rpg.scoreboard.compass.west_southwest=West Southwest
+
+rpg.scoreboard.compass.west=West
+rpg.scoreboard.compass.west_northwest=West Northwest
+rpg.scoreboard.compass.northwest=Northwest
+rpg.scoreboard.compass.north_northwest=North Northwest
+
+rpg.scoreboard.compass.up=Up
+rpg.scoreboard.compass.down=Down

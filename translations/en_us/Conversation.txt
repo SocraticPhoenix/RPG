@@ -1,0 +1,3 @@
+rpg.conversation.expire=That conversation has expired!
+rpg.conversation.distance=You're out of range of that conversation!
+rpg.conversation.selected=You've finished that conversation already!

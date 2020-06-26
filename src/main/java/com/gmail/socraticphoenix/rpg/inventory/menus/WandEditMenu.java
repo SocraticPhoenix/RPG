@@ -60,7 +60,7 @@ public class WandEditMenu extends SelectableMenu {
                 InventoryHelper.drawFilledRect(inventory, InventoryHelper.PAGE_START.add(0, 2), InventoryHelper.PAGE_START.add(3, 3), InventoryHelper.createBorderItem().createSnapshot());
                 InventoryHelper.drawFilledRect(inventory, InventoryHelper.PAGE_START.add(2, 0), InventoryHelper.PAGE_START.add(3, 3), InventoryHelper.createBorderItem().createSnapshot());
 
-                inventory.set(wandSlot.getX(), wandSlot.getY(), data.getWandEditing());
+                InventoryHelper.set(wandSlot, inventory, data.getWandEditing());
 
                 Vector2i rightStart = InventoryHelper.PAGE_START.add(6, 0);
                 Vector2i rightColStart = rightStart.add(2, 0);
@@ -74,10 +74,10 @@ public class WandEditMenu extends SelectableMenu {
                     Vector2i counter = rightColStart.add(0, 1);
                     Vector2i button2 = rightColStart.add(0, 2);
 
-                    inventory.set(counter.getX(), counter.getY(), ItemStack.builder().itemType(ItemTypes.PAPER).add(Keys.DISPLAY_NAME,
+                    InventoryHelper.set(counter, inventory, ItemStack.builder().itemType(ItemTypes.PAPER).add(Keys.DISPLAY_NAME,
                             Text.of(TextColors.GOLD, Messages.translate(player, "rpg.menu.wand.slots"), ": ", r.getSpellSlots().size())).itemData(InventoryHelper.createNoopButton()).build());
 
-                    inventory.set(button2.getX(), button2.getY(), ItemStack.builder()
+                    InventoryHelper.set(button2, inventory, ItemStack.builder()
                             .quantity(1)
                             .itemType(ItemTypes.WOOL)
                             .add(Keys.DYE_COLOR, DyeColors.RED)
@@ -88,7 +88,7 @@ public class WandEditMenu extends SelectableMenu {
                             })))
                             .build());
 
-                    inventory.set(button1.getX(), button1.getY(), ItemStack.builder()
+                    InventoryHelper.set(button1, inventory, ItemStack.builder()
                             .quantity(1)
                             .itemType(ItemTypes.WOOL)
                             .add(Keys.DYE_COLOR, DyeColors.GREEN)
@@ -105,7 +105,7 @@ public class WandEditMenu extends SelectableMenu {
                     for (int x = slotsStart.getX(); x < slotsEnd.getX(); x++) {
                         if (index < r.getSpellSlots().size()) {
                             SpellSlot slot = r.getSpellSlots().get(index);
-                            inventory.set(x, y, ItemStack.builder()
+                            InventoryHelper.set(x, y, inventory, ItemStack.builder()
                                     .itemType(ItemTypes.STAINED_HARDENED_CLAY)
                                     .add(Keys.DYE_COLOR, slot.isRestricted() ? DyeColors.RED : slot.isBypass() ? DyeColors.GREEN : DyeColors.PURPLE)
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.GOLD, Spells.clickString(player, slot.getSequence())))
@@ -117,7 +117,7 @@ public class WandEditMenu extends SelectableMenu {
                                     })))
                                     .build());
                         } else {
-                            inventory.set(x, y, InventoryHelper.createBorderItem(DyeColors.RED));
+                            InventoryHelper.set(x, y, inventory, InventoryHelper.createBorderItem(DyeColors.RED));
                         }
 
                         index++;
@@ -143,7 +143,7 @@ public class WandEditMenu extends SelectableMenu {
                     for (int x = InventoryHelper.PAGE_START.add(1, 0).getX(); x < InventoryHelper.PAGE_LIMIT.getX(); x++) {
                         if (index < spells.size()) {
                             Spell spellTgrt = spells.get(index);
-                            inventory.set(x, y, ItemStack.builder()
+                            InventoryHelper.set(x, y, inventory, ItemStack.builder()
                                     .itemType(spellTgrt.icon())
                                     .add(Keys.DISPLAY_NAME, Text.of(TextColors.GOLD, Messages.translate(player, spellTgrt.rawId())))
                                     .add(Keys.ITEM_LORE, Spells.spellbookLore(player, spellTgrt))
@@ -170,7 +170,7 @@ public class WandEditMenu extends SelectableMenu {
                                     })))
                                     .build());
                         } else {
-                            inventory.set(x, y, InventoryHelper.createBorderItem());
+                            InventoryHelper.set(x, y, inventory, InventoryHelper.createBorderItem());
                         }
                         index++;
                     }

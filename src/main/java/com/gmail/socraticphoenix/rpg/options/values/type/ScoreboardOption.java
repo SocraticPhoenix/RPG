@@ -92,9 +92,9 @@ public class ScoreboardOption extends AbstractRegistryItem<RPGRegistryItem> impl
                 })))
                 .build();
 
-        inventory.set(button1.getX(), button1.getY(), finishButton);
-        inventory.set(button2.getX(), button2.getY(), finishButton);
-        inventory.set(button3.getX(), button3.getY(), finishButton);
+        InventoryHelper.set(button1, inventory, finishButton);
+        InventoryHelper.set(button2, inventory, finishButton);
+        InventoryHelper.set(button3, inventory, finishButton);
 
         Vector2i startCurrent = InventoryHelper.PAGE_START;
         Vector2i endCurrent = InventoryHelper.PAGE_START.add(5, 3);
@@ -104,7 +104,7 @@ public class ScoreboardOption extends AbstractRegistryItem<RPGRegistryItem> impl
             for (int x = startCurrent.getX(); x < endCurrent.getX(); x++) {
                 if (listIndex < stats.size()) {
                     int finalListIndex = listIndex;
-                    inventory.set(x, y, ItemStack.builder()
+                    InventoryHelper.set(x, y, inventory, ItemStack.builder()
                             .quantity(1)
                             .itemType(ItemTypes.CYAN_GLAZED_TERRACOTTA)
                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.BLUE, stats.get(finalListIndex).getName().apply(player)))
@@ -116,7 +116,7 @@ public class ScoreboardOption extends AbstractRegistryItem<RPGRegistryItem> impl
                             }))))
                             .build());
                 } else {
-                    inventory.set(x, y, InventoryHelper.createBorderItem());
+                    InventoryHelper.set(x, y, inventory, InventoryHelper.createBorderItem());
                 }
                 listIndex++;
             }
@@ -130,7 +130,7 @@ public class ScoreboardOption extends AbstractRegistryItem<RPGRegistryItem> impl
             for (int x = startAvailable.getX(); x < endAvailable.getX(); x++) {
                 if (availableIndex < available.size()) {
                     int finalAvailableIndex = availableIndex;
-                    inventory.set(x, y, ItemStack.builder()
+                    InventoryHelper.set(x, y, inventory, ItemStack.builder()
                             .quantity(1)
                             .itemType(ItemTypes.GRAY_GLAZED_TERRACOTTA)
                             .add(Keys.DISPLAY_NAME, Text.of(TextColors.GRAY, available.get(availableIndex).getName().apply(player)))
@@ -144,7 +144,7 @@ public class ScoreboardOption extends AbstractRegistryItem<RPGRegistryItem> impl
                             })))
                             .build());
                 } else {
-                    inventory.set(x, y, InventoryHelper.createBorderItem());
+                    InventoryHelper.set(x, y, inventory, InventoryHelper.createBorderItem());
                 }
                 availableIndex++;
             }
